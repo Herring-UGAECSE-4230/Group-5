@@ -2,6 +2,11 @@
 @R0-R2- parameters to linux function services
 @R7 - linux function number
 
+@Deliverables:
+@1. The code used to display "Hello World from Group XXX" in the terminal with comments.
+@2. A screenshot of the terminal output.
+@3. Describe what the makefile is and what it is doing for this program.
+
 @Provide program starting point
 .global _start
 
