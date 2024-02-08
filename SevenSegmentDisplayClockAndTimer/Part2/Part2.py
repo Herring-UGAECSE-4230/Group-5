@@ -1,8 +1,9 @@
 import RPi.GPIO as GPIO
 from datetime import datetime
 # Initalizes the SSDs pins
-ssd_pins = []
-ssd_dot = 3
+#           A   B   C  D   E   F   G
+ssd_pins = [22, 18, 5, 25, 24, 27, 17]
+ssd_dot = 6
 
 GPIO.setup(ssd_pins, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(ssd_dot, GPIO.OUT, initial = GPIO.LOW)
@@ -10,8 +11,8 @@ GPIO.setup(ssd_dot, GPIO.OUT, initial = GPIO.LOW)
 # Since that only the pound key '#' will be used, the only two pins from 
 # the keypad that will be used will be for row 1 and column 3.
 
-keypadRow1Pin = 4
-keypadColumn3Pin = 5
+keypadRow1Pin = 21
+keypadColumn3Pin = 19
 
 GPIO.setup(keypadRow1Pin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(keypadColumn3Pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -19,10 +20,10 @@ GPIO.setup(keypadColumn3Pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 # Sets the clock pins for the DFFs
 
-clock1pin = 6
-clock2pin = 7
-clock3pin = 8
-clock4pin = 9
+clock1pin = 23
+clock2pin = 4
+clock3pin = 3
+clock4pin = 2
 
 GPIO.setup(clock1pin, GPIO.output, initial = GPIO.LOW)
 GPIO.setup(clock2pin, GPIO.output, initial = GPIO.LOW)
