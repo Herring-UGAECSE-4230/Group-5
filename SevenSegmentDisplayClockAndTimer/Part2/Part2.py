@@ -13,6 +13,27 @@ GPIO.setup(ssd_dot, GPIO.OUT, initial = GPIO.LOW)
 keypadRow1Pin = 4
 keypadColumn3Pin = 5
 
+GPIO.setup(keypadRow1Pin, GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(keypadColumn3Pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+
+
+# Sets the clock pins for the DFFs
+
+clock1pin = 6
+clock2pin = 7
+clock3pin = 8
+clock4pin = 9
+
+GPIO.setup(clock1pin, GPIO.output, initial = GPIO.LOW)
+GPIO.setup(clock2pin, GPIO.output, initial = GPIO.LOW)
+GPIO.setup(clock3pin, GPIO.output, initial = GPIO.LOW)
+GPIO.setup(clock4pin, GPIO.output, initial = GPIO.LOW)
+
+clk1 = GPIO.PWM(clock1pin, 100)
+clk2 = GPIO.PWM(clock2pin, 100)
+clk3 = GPIO.PWM(clock3pin, 100)
+clk4 = GPIO.PWM(clock4pin, 100)
+
 # Defines each number so that the GPIO can send out the correct signals
 # to each pin to display said number on the SSD.
 
@@ -27,11 +48,39 @@ sevenSegment7 = (1,1,1,0,0,0,0)
 sevenSegment8 = (1,1,1,1,1,1,1)
 sevenSegment9 = (1,1,1,0,0,1,1)
 
-
+# Sends binary data to SSDs
+def sendToSSD(curVal):
+    if (curVal == '0'):
+        GPIO.output(ssd_pins, sevenSegment0)
+    if (curVal == '1'):
+        GPIO.output(ssd_pins, sevenSegment1)
+    if (curVal == '2'):
+        GPIO.output(ssd_pins, sevenSegment2)
+    if (curVal == '3'):
+        GPIO.output(ssd_pins, sevenSegment3)
+    if (curVal == '4'):
+        GPIO.output(ssd_pins, sevenSegment4)
+    if (curVal == '5'):
+        GPIO.output(ssd_pins, sevenSegment5)
+    if (curVal == '6'):
+        GPIO.output(ssd_pins, sevenSegment6)
+    if (curVal == '7'):
+        GPIO.output(ssd_pins, sevenSegment7)
+    if (curVal == '8'):
+        GPIO.output(ssd_pins, sevenSegment8)
+    if (curVal == '9'):
+        GPIO.output(ssd_pins, sevenSegment9)
 
 # Variable will change if '#' on the keypad is pressed
 isOn = True
 isPM = False
+
+# Starts the clks
+
+clk1.start(50)
+clk2.start(50)
+clk3.start(50)
+clk4.start(50)
 
 while True:
     # Gets the current time
@@ -53,17 +102,23 @@ while True:
 
 
     # Sends data out to SSDs
-
-    
+    sendToSSD(hour[0])
+    sendToSSD(hour[1])
+    sendToSSD(minute[0])
+    sendToSSD(minute[1])
 
     #If the '#' key was pressed, turns the ssds on and off
     if GPIO.input(keypadColumn3Pin) == GPIO.HIGH:
         if (isOn):
             #Turn SSDs off
             isOn = False
+            GPIO.output(ssd_pins, GPIO.LOW)
+
         else:
             #Turn SSDs on
             isOn = True
+            GPIO.output(ssd_pins, GPIO.HIGH)
+
     GPIO.output(keypadRow1Pin, GPIO.LOW)
 
 
