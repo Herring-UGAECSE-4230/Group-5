@@ -1,5 +1,8 @@
 import RPi.GPIO as GPIO
 from datetime import datetime
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
 # Initalizes the SSDs pins
 #           A   B   C  D   E   F   G
 ssd_pins = [22, 18, 5, 25, 24, 27, 17]
@@ -25,10 +28,10 @@ clock2pin = 4
 clock3pin = 3
 clock4pin = 2
 
-GPIO.setup(clock1pin, GPIO.output, initial = GPIO.LOW)
-GPIO.setup(clock2pin, GPIO.output, initial = GPIO.LOW)
-GPIO.setup(clock3pin, GPIO.output, initial = GPIO.LOW)
-GPIO.setup(clock4pin, GPIO.output, initial = GPIO.LOW)
+GPIO.setup(clock1pin, GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(clock2pin, GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(clock3pin, GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(clock4pin, GPIO.OUT, initial = GPIO.LOW)
 
 clk1 = GPIO.PWM(clock1pin, 100)
 clk2 = GPIO.PWM(clock2pin, 100)
