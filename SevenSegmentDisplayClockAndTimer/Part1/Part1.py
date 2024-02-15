@@ -1,9 +1,9 @@
 import RPi.GPIO as GPIO
 from time import sleep
 # The Segments are:     A   B   C   D   E   F   G  DP
-gpioSevenSegmentPins = [27, 17, 18, 23, 24, 22, 5, 7]
+gpioSevenSegmentPins = [27, 17, 18, 23, 24, 22, 5, 25]
 # Keypad Map:           x1  x2  x3  x4  y1  y2  y3  y4
-gpioKeypadPins =       [21, 20, 16, 12 , 6 ,13, 19, 26]
+gpioKeypadPins =       [21, 20, 16, 12 , 6 ,13, 19, 7]
 
 #Possible Seven Segment Configurations
 sevenSegment0 = (1,1,1,1,1,1,0,0)
