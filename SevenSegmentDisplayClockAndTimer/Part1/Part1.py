@@ -6,21 +6,22 @@ gpioSevenSegmentPins = [27, 17, 18, 23, 24, 22, 5, 7]
 gpioKeypadPins =       [21, 20, 16, 12 , 6 ,13, 19, 26]
 
 #Possible Seven Segment Configurations
-sevenSegment0 = (1,1,1,1,1,1,0)
-sevenSegment1 = (0,1,1,0,0,0,0)
-sevenSegment2 = (1,1,0,1,1,0,1)
-sevenSegment3 = (1,1,1,1,0,0,1)
-sevenSegment4 = (0,1,1,0,0,1,1)
-sevenSegment5 = (1,0,1,1,0,1,1)
-sevenSegment6 = (0,0,1,1,1,1,1)
-sevenSegment7 = (1,1,1,0,0,0,0)
-sevenSegment8 = (1,1,1,1,1,1,1)
-sevenSegment9 = (1,1,1,0,0,1,1)
-sevenSegmentA = (1,1,1,0,1,1,1)
-sevenSegmentB = (0,0,1,1,1,1,1)
-sevenSegmentC = (1,0,0,1,1,1,0)
-sevenSegmentD = (0,1,1,1,1,0,1)
-sevenSegmentOff = (0,0,0,0,0,0,0)
+sevenSegment0 = (1,1,1,1,1,1,0,0)
+sevenSegment1 = (0,1,1,0,0,0,0,0)
+sevenSegment2 = (1,1,0,1,1,0,1,0)
+sevenSegment3 = (1,1,1,1,0,0,1,0)
+sevenSegment4 = (0,1,1,0,0,1,1,0)
+sevenSegment5 = (1,0,1,1,0,1,1,0)
+sevenSegment6 = (0,0,1,1,1,1,1,0)
+sevenSegment7 = (1,1,1,0,0,0,0,0)
+sevenSegment8 = (1,1,1,1,1,1,1,0)
+sevenSegment9 = (1,1,1,0,0,1,1,0)
+sevenSegmentA = (1,1,1,0,1,1,1,0)
+sevenSegmentB = (0,0,1,1,1,1,1,0)
+sevenSegmentC = (1,0,0,1,1,1,0,0)
+sevenSegmentD = (0,1,1,1,1,0,1,0)
+sevenSegmentDot = (0,0,0,0,0,0,0,1)
+sevenSegmentOff = (0,0,0,0,0,0,0,0)
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -128,7 +129,9 @@ def sendToSSD(currentVal):
             GPIO.output(gpioSevenSegmentPins, sevenSegmentC)
         if (currentVal == 'D'):
             GPIO.output(gpioSevenSegmentPins, sevenSegmentD)
-        if (curVal == '#'):
+        if (currentVal == '*'):
+            GPIO.output(gpioSevenSegmentPins, sevenSegmentDot)
+        if (currentVal == '#'):
             GPIO.output(gpioSevenSegmentPins, sevenSegmentOff)
             ssdOn = False
     else:
