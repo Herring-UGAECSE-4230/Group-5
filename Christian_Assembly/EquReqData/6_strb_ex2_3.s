@@ -23,7 +23,10 @@ _start:
 
 	add	r6, r6, #1	@ r6 = r6 + 1
 	mov	r1, #0x12	@ r1 = 0x12
-	strb	r1, [r6]	
+	strb	r1, [r6]
+
+	ldr 	r2, [r6, #-4]	@ load r2 with data from r6's 1st byte to 4th byte
+	ldr 	r3, [r6]	@ load r2 with data from r6's 5th byte
 
 	mov	r7, #1
 	svc	0
