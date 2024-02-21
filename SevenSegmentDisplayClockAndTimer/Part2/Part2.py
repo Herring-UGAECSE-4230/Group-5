@@ -4,26 +4,22 @@ from datetime import datetime
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 # Initalizes the SSDs pins
-#           A   B   C  D   E   F   G
-ssd_pins = [22, 18, 5, 25, 24, 27, 17]
-ssd_dot = 6
+#           A   B   C  D   E   F   G  DP
+ssd_pins = [27, 17, 18, 23, 24, 22, 5, 25] 
+# Initalize the Keypad Pins
+#             x1  x2  x3  x4  y1 y2  y3  y4
+keypad_pins = [21, 20, 16, 12, 6, 13, 19, 7]
 
 GPIO.setup(ssd_pins, GPIO.OUT, initial = GPIO.LOW)
-GPIO.setup(ssd_dot, GPIO.OUT, initial = GPIO.LOW)
-
-# Since that only the pound key '#' will be used, the only two pins from 
-# the keypad that will be used will be for row 1 and column 3.
-
-keypadRow1Pin = 21
-keypadColumn3Pin = 19
-
-GPIO.setup(keypadRow1Pin, GPIO.OUT, initial = GPIO.LOW)
-GPIO.setup(keypadColumn3Pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+# Sets up the output pins for the keypad
+GPIO.setup(keypad_pins[0:4], GPIO.OUT, initial = GPIO.LOW)
+# Sets up the input pins from the keypad
+GPIO.setup(keypad_pins[4:8], GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 
 # Sets the clock pins for the DFFs
 
-clock1pin = 23
+clock1pin = 15
 clock2pin = 4
 clock3pin = 3
 clock4pin = 2
@@ -51,33 +47,99 @@ sevenSegment6 = (0,0,1,1,1,1,1)
 sevenSegment7 = (1,1,1,0,0,0,0)
 sevenSegment8 = (1,1,1,1,1,1,1)
 sevenSegment9 = (1,1,1,0,0,1,1)
+sevenSegmentDot = (0,0,0,0,0,0,0,1)
+sevenSegmentOff = (0,0,0,0,0,0,0,0)
+
+ssdOn = True
+curVal = '0'
+
+keypadMap = [['1', '2', '3', 'A'],
+
+             ['4', '5', '6', 'B'],
+             ['7', '8', '9', 'C'],
+             ['*', '0', '#', 'D']
+            ]
+
+# Copied from Part1.py code
+# Returns the button pressed based on the inputted row and
+# the characters in said row
+def readKeypad(rowNum, rowChar):
+    global ssdOn
+    global curVal
+    
+    # Checks if the SSD is on. If it's not, no value will be displayed
+    # until '#' is pressed again
+    if (not ssdOn):
+        curVal = None
+    
+    # Checks if curVal is still '#' while the SSD is on.
+    # To prevent the SSD from turning back off
+    if (curVal == '#' and ssdOn):
+        curVal = '0'
+        
+    GPIO.output(rowNum, GPIO.HIGH)
+
+    if (GPIO.input(keypad_pins[4]) == GPIO.HIGH):
+        debounceLimiter()
+        curVal = rowChar[0]
+        print(curVal)
+    elif (GPIO.input(keypad_pins[5]) == GPIO.HIGH):
+        debounceLimiter()
+        curVal = rowChar[1]
+        print(curVal)
+    elif (GPIO.input(keypad_pins[6]) == GPIO.HIGH):
+        debounceLimiter()
+        curVal = rowChar[2]
+        print(curVal)
+    elif (GPIO.input(keypad_pins[7]) == GPIO.HIGH):
+        debounceLimiter()
+        curVal = rowChar[3]
+        print(curVal)
+        
+    GPIO.output(rowNum,GPIO.LOW)
+
+    return curVal
+
+# Copied from Part1.py code
+# Helps to prevent debouncing
+def debounceLimiter():
+    sleep(0.25)
 
 # Sends binary data to SSDs
-def sendToSSD(curVal):
-    if (curVal == '0'):
-        GPIO.output(ssd_pins, sevenSegment0)
-    if (curVal == '1'):
-        GPIO.output(ssd_pins, sevenSegment1)
-    if (curVal == '2'):
-        GPIO.output(ssd_pins, sevenSegment2)
-    if (curVal == '3'):
-        GPIO.output(ssd_pins, sevenSegment3)
-    if (curVal == '4'):
-        GPIO.output(ssd_pins, sevenSegment4)
-    if (curVal == '5'):
-        GPIO.output(ssd_pins, sevenSegment5)
-    if (curVal == '6'):
-        GPIO.output(ssd_pins, sevenSegment6)
-    if (curVal == '7'):
-        GPIO.output(ssd_pins, sevenSegment7)
-    if (curVal == '8'):
-        GPIO.output(ssd_pins, sevenSegment8)
-    if (curVal == '9'):
-        GPIO.output(ssd_pins, sevenSegment9)
+def sendToSSD(currentVal):
+    global ssdOn
+    if (ssdOn):
+        if (currentVal == '0'):
+            GPIO.output(ssd_pins, sevenSegment0)
+        if (currentVal == '1'):
+            GPIO.output(ssd_pins, sevenSegment1)
+        if (currentVal == '2'):
+            GPIO.output(ssd_pins, sevenSegment2)
+        if (currentVal == '3'):
+            GPIO.output(ssd_pins, sevenSegment3)
+        if (currentVal == '4'):
+            GPIO.output(ssd_pins, sevenSegment4)
+        if (currentVal == '5'):
+            GPIO.output(ssd_pins, sevenSegment5)
+        if (currentVal == '6'):
+            GPIO.output(ssd_pins, sevenSegment6)
+        if (currentVal == '7'):
+            GPIO.output(ssd_pins, sevenSegment7)
+        if (currentVal == '8'):
+            GPIO.output(ssd_pins, sevenSegment8)
+        if (currentVal == '9'):
+            GPIO.output(ssd_pins, sevenSegment9)
+        if (currentVal == '*' ):
+            GPIO.output(ssd_pins, sevenSegmentDot)
+        if (currentVal == '#' ):
+            GPIO.output(ssd_pins, sevenSegmentOff)
+            ssdOn = False
+    else:
+        if (currentVal == '#'):
+            GPIO.output(ssd_pins, sevenSegmentOff)
+            ssdOn = True
+            
 
-# Variable will change if '#' on the keypad is pressed
-isOn = True
-isPM = False
 
 # Starts the clks
 
@@ -87,43 +149,17 @@ clk3.start(50)
 clk4.start(50)
 
 while True:
-    # Gets the current time
-    GPIO.output(keypadRow1Pin, GPIO.HIGH)
-    now = datetime.now()
-
-    # Checks if it is currently PM (if the hour variable past 12).
-    if now.hour - 12 >= 0:
-        isPM = True
-        now.hour - 12
-        GPIO.output(ssd_dot, GPIO.HIGH)
-    else:
-        isPM = False
-        GPIO.output(ssd_dot, GPIO.LOW)
-
-    # Formats the hour and minute to become strings
-    hour = '{0:02d}'.format(now.hour)
-    minute = '{0:02d}'.format(now.minute)
-
 
     # Sends data out to SSDs
-    sendToSSD(hour[0])
-    sendToSSD(hour[1])
-    sendToSSD(minute[0])
-    sendToSSD(minute[1])
+    if (ssdOn):
+        sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
+        sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
+        sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
+        sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
 
-    #If the '#' key was pressed, turns the ssds on and off
-    if GPIO.input(keypadColumn3Pin) == GPIO.HIGH:
-        if (isOn):
-            #Turn SSDs off
-            isOn = False
-            GPIO.output(ssd_pins, GPIO.LOW)
-
-        else:
-            #Turn SSDs on
-            isOn = True
-            GPIO.output(ssd_pins, GPIO.HIGH)
-
-    GPIO.output(keypadRow1Pin, GPIO.LOW)
+    else:
+        # If SSD is off
+        sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
 
 
 
