@@ -168,6 +168,7 @@ def shiftClocks():
             sleep(1)
             startClk(clk2)
             clk2On = True
+            sendToSSD(number_positions[1])
             
 
         elif (clk2On):
