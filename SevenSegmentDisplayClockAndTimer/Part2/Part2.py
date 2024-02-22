@@ -17,6 +17,14 @@ GPIO.setup(keypad_pins[0:4], GPIO.OUT, initial = GPIO.LOW)
 # Sets up the input pins from the keypad
 GPIO.setup(keypad_pins[4:8], GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
+# Keeps track of the numbers on the SSDs
+global number_positions
+number_positions = ['0', '0', '0', '0']
+
+# Status of any input pressed
+global buttonPressed
+buttonPressed = False
+
 
 # Sets the clock pins for the DFFs
 
@@ -24,6 +32,8 @@ clock1pin = 15
 clock2pin = 4
 clock3pin = 3
 clock4pin = 2
+
+clk_pins = [15, 4, 3, 2]
 
 GPIO.setup(clock1pin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(clock2pin, GPIO.OUT, initial = GPIO.LOW)
@@ -65,7 +75,7 @@ keypadMap = [['1', '2', '3', 'A'],
              ['*', '0', '#', 'D']
             ]
 
-# Copied from Part1.py code
+# Mostly copied from Part1.py code
 # Returns the button pressed based on the inputted row and
 # the characters in said row
 def readKeypad(rowNum, rowChar):
@@ -88,18 +98,22 @@ def readKeypad(rowNum, rowChar):
         debounceLimiter()
         curVal = rowChar[0]
         print(curVal)
+        buttonPressed = True
     elif (GPIO.input(keypad_pins[5]) == GPIO.HIGH):
         debounceLimiter()
         curVal = rowChar[1]
         print(curVal)
+        buttonPressed = True
     elif (GPIO.input(keypad_pins[6]) == GPIO.HIGH):
         debounceLimiter()
         curVal = rowChar[2]
         print(curVal)
+        buttonPressed = True
     elif (GPIO.input(keypad_pins[7]) == GPIO.HIGH):
         debounceLimiter()
         curVal = rowChar[3]
         print(curVal)
+        buttonPressed = True
         
     GPIO.output(rowNum,GPIO.LOW)
 
@@ -110,10 +124,38 @@ def readKeypad(rowNum, rowChar):
 def debounceLimiter():
     sleep(0.25)
 
+# Shifts values down the row of SSDs and places the parameter into the first position
+def shiftValues(newValue):
+    global ssdOn
+    global number_positions
+    if (ssdOn):
+        # Moves all current values up by an index of one
+        # and starts every clock that's not currently running
+        for i in range (3):
+            number_positions[i + 1] = number_positions[i]
+            startClk(clk_pins[i + 1])
+
+        # Loops through the last three displays to set up the clocks
+        for i in range(3):
+            sendToSSD(number_positions[3 - i])
+            stopClk(clk_pins[3 - i])
+        # After the loop is done, the new value will be added to the displays
+        sendToSSD(newValue)
+        number_positions[0] = newValue
+
+        
+# Helper function to start a clock at a specific pin
+def startClk(clk_pin):
+    clk_pin.start(50)
+
+# Helper function to stop a clock at a specific pin
+def stopClk(clk_pin):
+    clk_pin.stop()
+
 # Sends binary data to SSDs
 def sendToSSD(currentVal):
     global ssdOn
-    if (ssdOn):
+    if (ssdOn and buttonPressed):
         # Valid Cases; will turn LED pin off
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
@@ -165,18 +207,21 @@ def sendToSSD(currentVal):
 # Starts the clks
 
 clk1.start(50)
-clk2.start(50)
-clk3.start(50)
-clk4.start(50)
+# clk2.start(50)
+# clk3.start(50)
+# clk4.start(50)
 
 while True:
-
+    buttonPressed = False
     # Sends data out to SSDs
     if (ssdOn):
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
         sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
         sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
+
+        if (buttonPressed):
+            shiftValues(curVal)
 
     else:
         # If SSD is off
