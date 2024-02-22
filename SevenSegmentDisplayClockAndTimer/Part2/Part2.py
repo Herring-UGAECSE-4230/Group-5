@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 from datetime import datetime
+from time import sleep
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -37,16 +38,16 @@ clk4 = GPIO.PWM(clock4pin, 100)
 # Defines each number so that the GPIO can send out the correct signals
 # to each pin to display said number on the SSD.
 
-sevenSegment0 = (1,1,1,1,1,1,0)
-sevenSegment1 = (0,1,1,0,0,0,0)
-sevenSegment2 = (1,1,0,1,1,0,1)
-sevenSegment3 = (1,1,1,1,0,0,1)
-sevenSegment4 = (0,1,1,0,0,1,1)
-sevenSegment5 = (1,0,1,1,0,1,1)
-sevenSegment6 = (0,0,1,1,1,1,1)
-sevenSegment7 = (1,1,1,0,0,0,0)
-sevenSegment8 = (1,1,1,1,1,1,1)
-sevenSegment9 = (1,1,1,0,0,1,1)
+sevenSegment0 = (1,1,1,1,1,1,0,0)
+sevenSegment1 = (0,1,1,0,0,0,0,0)
+sevenSegment2 = (1,1,0,1,1,0,1,0)
+sevenSegment3 = (1,1,1,1,0,0,1,0)
+sevenSegment4 = (0,1,1,0,0,1,1,0)
+sevenSegment5 = (1,0,1,1,0,1,1,0)
+sevenSegment6 = (0,0,1,1,1,1,1,0)
+sevenSegment7 = (1,1,1,0,0,0,0,0)
+sevenSegment8 = (1,1,1,1,1,1,1,0)
+sevenSegment9 = (1,1,1,0,0,1,1,0)
 sevenSegmentDot = (0,0,0,0,0,0,0,1)
 sevenSegmentOff = (0,0,0,0,0,0,0,0)
 
