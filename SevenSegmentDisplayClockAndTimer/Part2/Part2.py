@@ -174,6 +174,7 @@ def shiftClocks():
             clk2On = False
             number_positions[1] = curVal
             startClk(clk3)
+            sleep(1)
             clk3On = True
             sendToSSD(number_positions[2])
 
@@ -192,6 +193,9 @@ def shiftClocks():
             startClk(clk1)
             clk1On = True
             sendToSSD(number_positions[0])
+
+        for i in range(4):
+            print(f"Index {i} = {number_positions[i]}")
             
             
 
