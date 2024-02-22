@@ -35,6 +35,13 @@ clock2pin = 4
 clock3pin = 3
 clock4pin = 2
 
+# Booleans for if each clock is on or not
+clk1On = True
+clk2On = True
+clk3On = True
+clk4On = True
+
+# Array holding each clock pin
 clk_pins = [clock1pin, clock2pin, clock3pin, clock4pin]
 
 GPIO.setup(clock1pin, GPIO.OUT, initial = GPIO.LOW)
@@ -130,30 +137,43 @@ def debounceLimiter():
     sleep(0.25)
 
 # Shifts values down the row of SSDs and places the parameter into the first position
-def shiftValues(newValue):
+# Example: If the old positions are:
+#  0  1  2  3
+# [1, 2, 3, 4]    
+# and the new value is 5,
+# The new positions showing on the ssds should be
+#  0  1  2  3
+# [5, 1, 2, 3]
+
+def shiftClocks():
     global ssdOn
-    global number_positions
+    #global number_positions
     if (ssdOn):
-        # Moves all current values up by an index of one
-        # and starts every clock that's not currently running
-        for i in range (3):
-            number_positions[3 - i] = number_positions[3 - 1 - i]
-            startClk(clks[i + 1])
-            print(i + 2)
-            print(" Started\n")
-    
-        # Loops through the last three displays to set up the clocks
-        for i in range(3):
-            sendToSSD(number_positions[3 - i])
-            stopClk(clks[3 - i])
-            print(4 - i)
-            print(" Stopped\n")
-        # After the loop is done, the new value will be added to the displays
-        sendToSSD(newValue)
-        number_positions[0] = newValue
-        
-        for i in range(4):
-            print(f'{i} = {number_positions[i]}')
+        # If clk n is on, clk n is turned off, and clk n + 1 turns on.
+        if (clk1On):
+            stopClk(clk1)
+            clk1On = False
+            startClk(clk2)
+            clk2On = True
+
+        elif (clk2On):
+            stopClk(clk2)
+            clk2On = False
+            startClk(clk3)
+            clk3On = True
+
+        elif (clk3On):
+            stopClk(clk3)
+            clk3On = False
+            startClk(clk4)
+            clk4On = True
+
+        elif (clk4On):
+            stopClk(clk4)
+            clk4On = False
+            startClk(clk1)
+            clk4On = True
+
 
         
 # Helper function to start a clock at a specific pin
@@ -161,8 +181,8 @@ def startClk(clk):
     clk.start(50)
 
 # Helper function to stop a clock at a specific pin
-def stopClk(clk_pin):
-    clk_pin.stop()
+def stopClk(clk):
+    clk.stop()
 
 # Sends binary data to SSDs
 def sendToSSD(currentVal):
@@ -243,6 +263,7 @@ clk1.start(50)
 clk2.start(50)
 clk3.start(50)
 clk4.start(50)
+clk1On, clk2On, clk3On, clk4On = True
 
 
 # Brings up initial state of clock
@@ -251,13 +272,15 @@ sendToSSD('0')
 sleep(0.1)
 
 # Stops the clks
+
 clk2.stop()
 clk3.stop()
 clk4.stop()
+clk2On, clk3On, clk4On = False
 
 while True:
     buttonPressed = False
-    # Sends data out to SSDs
+    # Checks for any input on the keypad.
     if (ssdOn):
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
@@ -267,7 +290,7 @@ while True:
         # If there was a button press
         if (buttonPressed):
             debounceLimiter()
-            shiftValues(curVal)
+            shiftClocks()
 
     else:
         # If SSD is off
