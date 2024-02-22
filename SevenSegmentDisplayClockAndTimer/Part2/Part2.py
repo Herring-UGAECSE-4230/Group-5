@@ -164,7 +164,7 @@ def shiftClocks():
             stopClk(clk1)
             clk1On = False
             number_positions[0] = curVal
-            sleep(0.1)
+            sleep(1)
             sendToSSD(number_positions[1])
             startClk(clk2)
             clk2On = True
