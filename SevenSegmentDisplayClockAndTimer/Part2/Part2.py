@@ -182,7 +182,7 @@ def shiftClocks():
             stopClk(clk4)
             clk4On = False
             startClk(clk1)
-            clk4On = True
+            clk1On = True
 
 
         
@@ -235,6 +235,7 @@ def sendToSSD(currentVal):
             GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '#' ):
             # Starts the clocks so that the SSDs can be turned off
+            startClk(clks[0])
             startClk(clks[1])
             startClk(clks[2])
             startClk(clks[3])
@@ -245,6 +246,7 @@ def sendToSSD(currentVal):
             for i in range(4):
                 number_positions[i] = 0
             sleep(0.1)
+            stopClk(clks[0])
             stopClk(clks[1])
             stopClk(clks[2])
             stopClk(clks[3])
@@ -255,12 +257,14 @@ def sendToSSD(currentVal):
             buttonPressed = False
     else:
         if (currentVal == '#'):
+            startClk(clks[0])
             startClk(clks[1])
             startClk(clks[2])
             startClk(clks[3])
             GPIO.output(ssd_pins, sevenSegment0)
             ssdOn = True
             sleep(0.1)
+            stopClk(clks[0])
             stopClk(clks[1])
             stopClk(clks[2])
             stopClk(clks[3])
