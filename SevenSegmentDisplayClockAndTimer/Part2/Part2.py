@@ -157,32 +157,40 @@ def shiftClocks():
     global clk2On
     global clk3On
     global clk4On
-    #global number_positions
+    global number_positions
     if (ssdOn):
         # If clk n is on, clk n is turned off, and clk n + 1 turns on.
         if (clk1On):
             stopClk(clk1)
             clk1On = False
+            number_positions[0] = curVal
             startClk(clk2)
             clk2On = True
+            sendToSSD(number_positions[1])
 
         elif (clk2On):
             stopClk(clk2)
             clk2On = False
+            number_positions[1] = curVal
             startClk(clk3)
             clk3On = True
+            sendToSSD(number_positions[2])
 
         elif (clk3On):
             stopClk(clk3)
             clk3On = False
+            number_positions[2] = curVal
             startClk(clk4)
             clk4On = True
-
+            sendToSSD(number_positions[3])
         elif (clk4On):
             stopClk(clk4)
             clk4On = False
+            number_positions[3] = curVal
             startClk(clk1)
             clk1On = True
+            sendToSSD(number_positions[0])
+            
 
 
         
