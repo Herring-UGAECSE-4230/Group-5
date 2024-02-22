@@ -36,6 +36,12 @@ clock3pin = 3
 clock4pin = 2
 
 # Booleans for if each clock is on or not
+
+global clk1On
+global clk2On
+global clk3On
+global clk4On
+
 clk1On = True
 clk2On = True
 clk3On = True
@@ -147,6 +153,10 @@ def debounceLimiter():
 
 def shiftClocks():
     global ssdOn
+    global clk1On
+    global clk2On
+    global clk3On
+    global clk4On
     #global number_positions
     if (ssdOn):
         # If clk n is on, clk n is turned off, and clk n + 1 turns on.
@@ -263,7 +273,10 @@ clk1.start(50)
 clk2.start(50)
 clk3.start(50)
 clk4.start(50)
-clk1On, clk2On, clk3On, clk4On = True
+clk1On = True
+clk2On = True
+clk3On = True
+clk4On = True
 
 
 # Brings up initial state of clock
@@ -276,7 +289,9 @@ sleep(0.1)
 clk2.stop()
 clk3.stop()
 clk4.stop()
-clk2On, clk3On, clk4On = False
+clk2On = False
+clk3On = False
+clk4On = False
 
 while True:
     buttonPressed = False
