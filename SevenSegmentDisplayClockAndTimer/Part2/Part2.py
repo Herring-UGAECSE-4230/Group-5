@@ -81,6 +81,7 @@ keypadMap = [['1', '2', '3', 'A'],
 def readKeypad(rowNum, rowChar):
     global ssdOn
     global curVal
+    global buttonPressed
     
     # Checks if the SSD is on. If it's not, no value will be displayed
     # until '#' is pressed again
