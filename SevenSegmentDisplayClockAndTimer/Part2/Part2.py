@@ -283,10 +283,10 @@ def sendToSSD(currentVal):
 
 # Starts the clks
 
-clk1.start(100)
-clk2.start(100)
-clk3.start(100)
-clk4.start(100)
+clk1.start(50)
+clk2.start(50)
+clk3.start(50)
+clk4.start(50)
 clk1On = True
 clk2On = True
 clk3On = True
