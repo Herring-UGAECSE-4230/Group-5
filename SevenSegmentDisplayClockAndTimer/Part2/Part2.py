@@ -167,6 +167,7 @@ def shiftClocks():
             startClk(clk2)
             clk2On = True
             sendToSSD(number_positions[1])
+            debounceLimiter()
 
         elif (clk2On):
             stopClk(clk2)
@@ -175,6 +176,7 @@ def shiftClocks():
             startClk(clk3)
             clk3On = True
             sendToSSD(number_positions[2])
+            debounceLimiter()
 
         elif (clk3On):
             stopClk(clk3)
@@ -183,6 +185,7 @@ def shiftClocks():
             startClk(clk4)
             clk4On = True
             sendToSSD(number_positions[3])
+            debounceLimiter()
         elif (clk4On):
             stopClk(clk4)
             clk4On = False
@@ -190,6 +193,7 @@ def shiftClocks():
             startClk(clk1)
             clk1On = True
             sendToSSD(number_positions[0])
+            debounceLimiter()
             
 
 
