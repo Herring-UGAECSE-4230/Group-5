@@ -198,7 +198,7 @@ def stopClk(clk):
 def sendToSSD(currentVal):
     global ssdOn
     global buttonPressed
-    if (ssdOn and buttonPressed):
+    if (ssdOn):
         # Valid Cases; will turn LED pin off
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
