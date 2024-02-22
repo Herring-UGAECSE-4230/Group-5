@@ -36,7 +36,7 @@ clk3 = GPIO.PWM(clock3pin, 100)
 clk4 = GPIO.PWM(clock4pin, 100)
 
 # Sets up the LED pin
-led_pin = 26
+led_pin = 11
 GPIO.setup(led_pin, GPIO.OUT, initial = GPIO.OUT)
 
 # Defines each number so that the GPIO can send out the correct signals
