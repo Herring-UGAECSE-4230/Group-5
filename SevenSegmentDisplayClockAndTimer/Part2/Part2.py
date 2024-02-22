@@ -33,7 +33,7 @@ clock2pin = 4
 clock3pin = 3
 clock4pin = 2
 
-clk_pins = [15, 4, 3, 2]
+clk_pins = [clock1pin, clock2pin, clock3pin, clock4pin]
 
 GPIO.setup(clock1pin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(clock2pin, GPIO.OUT, initial = GPIO.LOW)
