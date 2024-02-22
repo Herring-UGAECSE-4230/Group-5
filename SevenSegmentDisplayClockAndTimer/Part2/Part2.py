@@ -165,9 +165,9 @@ def sendToSSD(currentVal):
 # Starts the clks
 
 clk1.start(50)
-clk2.start(50)
-clk3.start(50)
-clk4.start(50)
+# clk2.start(50)
+# clk3.start(50)
+# clk4.start(50)
 
 while True:
 
