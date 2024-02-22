@@ -34,6 +34,10 @@ clk2 = GPIO.PWM(clock2pin, 100)
 clk3 = GPIO.PWM(clock3pin, 100)
 clk4 = GPIO.PWM(clock4pin, 100)
 
+# Sets up the LED pin
+led_pin = 26
+GPIO.setup(led_pin, GPIO.OUT, initial = GPIO.OUT)
+
 # Defines each number so that the GPIO can send out the correct signals
 # to each pin to display said number on the SSD.
 
@@ -109,31 +113,47 @@ def debounceLimiter():
 def sendToSSD(currentVal):
     global ssdOn
     if (ssdOn):
+        # Valid Cases; will turn LED pin off
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '1'):
             GPIO.output(ssd_pins, sevenSegment1)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '2'):
             GPIO.output(ssd_pins, sevenSegment2)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '3'):
             GPIO.output(ssd_pins, sevenSegment3)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '4'):
             GPIO.output(ssd_pins, sevenSegment4)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '5'):
             GPIO.output(ssd_pins, sevenSegment5)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '6'):
             GPIO.output(ssd_pins, sevenSegment6)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '7'):
             GPIO.output(ssd_pins, sevenSegment7)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '8'):
             GPIO.output(ssd_pins, sevenSegment8)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '9'):
             GPIO.output(ssd_pins, sevenSegment9)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '*' ):
             GPIO.output(ssd_pins, sevenSegmentDot)
+            GPIO.output(led_pin, GPIO.LOW)
         if (currentVal == '#' ):
             GPIO.output(ssd_pins, sevenSegmentOff)
+            GPIO.output(led_pin, GPIO.LOW)
             ssdOn = False
+        # Invalid Cases
+        if (currentVal == 'A' or currentVal == 'B' or currentVal == 'C' or currentVal == 'D'):
+            GPIO.output(led_pin, GPIO.HIGH)
     else:
         if (currentVal == '#'):
             GPIO.output(ssd_pins, sevenSegmentOff)
