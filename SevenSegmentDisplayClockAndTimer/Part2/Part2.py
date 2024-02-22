@@ -168,6 +168,7 @@ def shiftClocks():
             sleep(1)
             startClk(clk2)
             clk2On = True
+            sleep(1)
             sendToSSD('3')
             
 
