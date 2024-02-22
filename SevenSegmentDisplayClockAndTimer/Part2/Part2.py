@@ -55,10 +55,10 @@ GPIO.setup(clock2pin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(clock3pin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(clock4pin, GPIO.OUT, initial = GPIO.LOW)
 
-clk1 = GPIO.PWM(clock1pin, 2)
-clk2 = GPIO.PWM(clock2pin, 2)
-clk3 = GPIO.PWM(clock3pin, 2)
-clk4 = GPIO.PWM(clock4pin, 2)
+clk1 = GPIO.PWM(clock1pin, 500)
+clk2 = GPIO.PWM(clock2pin, 500)
+clk3 = GPIO.PWM(clock3pin, 500)
+clk4 = GPIO.PWM(clock4pin, 500)
 
 clks = [clk1, clk2, clk3, clk4]
 
