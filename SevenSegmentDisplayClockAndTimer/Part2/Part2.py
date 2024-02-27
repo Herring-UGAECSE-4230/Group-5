@@ -142,14 +142,16 @@ def readKeypad(rowNum, rowChar):
 def debounceLimiter():
     sleep(0.25)
 
-# Shifts values down the row of SSDs and places the parameter into the first position
-# Example: If the old positions are:
+# On every button press, shiftClocks will switch over to the next clock.
+# This is to allow the inputted number to be displayed on the SSD correlating to the clock.
+# Example: If the program is currently on the 1st clock, 
+# The old positions are:
 #  0  1  2  3
 # [1, 2, 3, 4]    
-# and the new value is 5,
+# and the button input is 5,
 # The new positions showing on the ssds should be
 #  0  1  2  3
-# [5, 1, 2, 3]
+# [5, 2, 3, 4]
 
 def shiftClocks():
     global ssdOn
@@ -163,6 +165,7 @@ def shiftClocks():
         if (clk1On):
             stopClk(clk1)
             clk1On = False
+            GPIO.output(clock1pin, 1)
             number_positions[0] = curVal
             startClk(clk2)
             clk2On = True
