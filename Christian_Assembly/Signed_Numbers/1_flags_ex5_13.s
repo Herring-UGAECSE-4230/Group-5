@@ -33,9 +33,9 @@ _start:
 	ldr	r2, =data2
 	ldr	r3, =result
 	
-	ldr 	r4, [r1]	@ r4 = ???
-	ldr 	r5, [r2]	@ r5 = ???
-	adds	r4, r4, r5	@ r4 = r4 + r5 = ???, or does it?
+	ldr 	r4, [r1]	@ r4 = 1,848,587,631
+	ldr 	r5, [r2]	@ r5 = 332,698,928
+	adds	r4, r4, r5	@ r4 = r4 + r5 = 2,181,286,559, or does it?
 	str	r4, [r3]	@store result in location
 
 @Second example
@@ -43,9 +43,9 @@ _start:
 	ldr	r2, =data4
 	ldr	r3, =result2
 	
-	ldr 	r4, [r1]	@ r4 = ??
-	ldr	r5, [r2]	@ r5 = ??
-	adds	r4, r4, r5	@ r4 = r4 + r5 = ???, or does it?
+	ldr 	r4, [r1]	@ r4 = 1,412,380,015
+	ldr	r5, [r2]	@ r5 = 316,708,144
+	adds	r4, r4, r5	@ r4 = r4 + r5 = 1,729,088,159, or does it?
 	str	r4, [r3]	@store result in location
 
 @Third example
@@ -53,9 +53,9 @@ _start:
 	ldr	r2, =data6
 	ldr	r3, =result3
 	
-	ldr 	r4, [r1]	@ r4 = ??
-	ldr 	r5, [r2]	@ r5 = ??
-	adds	r4, r4, r5	@ r4 = r4 + r5 = ???, or does it?
+	ldr 	r4, [r1]	@ r4 = -2,147,483,648
+	ldr 	r5, [r2]	@ r5 = -1
+	adds	r4, r4, r5	@ r4 = r4 + r5 = -2,147,483,649, or does it?
 	str	r4, [r3]	@store result in location
 
 @Fourth example
@@ -63,9 +63,9 @@ _start:
 	ldr	r2, =data8
 	ldr	r3, =result4
 	
-	ldr 	r4, [r1]	@ r4 = ??
-	ldr 	r5, [r2]	@ r5 = ??
-	adds	r4, r4, r5	@ r4 = r4 + r5 = ???, or does it?
+	ldr 	r4, [r1]	@ r4 = -2
+	ldr 	r5, [r2]	@ r5 = -5
+	adds	r4, r4, r5	@ r4 = r4 + r5 = -7 , or does it?
 	str	r4, [r3]	@store result in location
 
 	mov 	r7, #1
