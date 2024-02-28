@@ -75,7 +75,7 @@ sevenSegment2 = (1,1,0,1,1,0,1,0)
 sevenSegment3 = (1,1,1,1,0,0,1,0)
 sevenSegment4 = (0,1,1,0,0,1,1,0)
 sevenSegment5 = (1,0,1,1,0,1,1,0)
-sevenSegment6 = (0,0,1,1,1,1,1,0)
+sevenSegment6 = (1,0,1,1,1,1,1,0)
 sevenSegment7 = (1,1,1,0,0,0,0,0)
 sevenSegment8 = (1,1,1,1,1,1,1,0)
 sevenSegment9 = (1,1,1,0,0,1,1,0)
@@ -192,6 +192,8 @@ def shiftClocks():
             clk4On = False
             number_positions[3] = curVal
             startClk(clk_pins[0])
+            # This sleep function helps to prevent the first SSD from only
+            # taking in some parts of the sendToSSD function.
             sleep(0.07)
             clk1On = True
             sendToSSD(number_positions[0])
@@ -215,8 +217,34 @@ def stopClk(clk):
 def sendToSSD(currentVal):
     global ssdOn
     global buttonPressed
+    global clk1On
+    global clk2On
+    global clk3On
+    global clk4On
     if (ssdOn):
         # Valid Cases; will turn LED pin off
+        if (currentVal == '#' ):
+            # Starts the clocks so that the SSDs can be turned off
+            startClk(clk_pins[0])
+            startClk(clk_pins[1])
+            startClk(clk_pins[2])
+            startClk(clk_pins[3])
+            GPIO.output(ssd_pins, sevenSegmentOff)
+            GPIO.output(led_pin, GPIO.LOW)
+            ssdOn = False
+            # Delays the time so that the SSDs can successfully turn off
+            for i in range(4):
+                number_positions[i] = 0
+            sleep(0.1)
+            stopClk(clk_pins[0])
+            stopClk(clk_pins[1])
+            stopClk(clk_pins[2])
+            stopClk(clk_pins[3])
+            clk1On = False
+            clk2On = False
+            clk3On = False
+            clk4On = False
+            
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
             GPIO.output(led_pin, GPIO.LOW)
@@ -250,23 +278,7 @@ def sendToSSD(currentVal):
         if (currentVal == '*' ):
             GPIO.output(ssd_pins, sevenSegmentDot)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '#' ):
-            # Starts the clocks so that the SSDs can be turned off
-            startClk(clk_pins[0])
-            startClk(clk_pins[1])
-            startClk(clk_pins[2])
-            startClk(clk_pins[3])
-            GPIO.output(ssd_pins, sevenSegmentOff)
-            GPIO.output(led_pin, GPIO.LOW)
-            ssdOn = False
-            # Delays the time so that the SSDs can successfully turn off
-            for i in range(4):
-                number_positions[i] = 0
-            sleep(0.1)
-            stopClk(clk_pins[0])
-            stopClk(clk_pins[1])
-            stopClk(clk_pins[2])
-            stopClk(clk_pins[3])
+            
         # Invalid Cases
         if (currentVal == 'A' or currentVal == 'B' or currentVal == 'C' or currentVal == 'D'):
             GPIO.output(led_pin, GPIO.HIGH)
@@ -285,7 +297,10 @@ def sendToSSD(currentVal):
             stopClk(clk_pins[1])
             stopClk(clk_pins[2])
             stopClk(clk_pins[3])
-            
+            # Sets up SSD1 to be ready to recieve input
+            stopClk(clk_pins[0])
+            startClk(clk_pins[0])
+            clk1On = True
 
 
 # Starts the clks
