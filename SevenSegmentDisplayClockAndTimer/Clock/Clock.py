@@ -154,7 +154,7 @@ def debounceLimiter():
 #  0  1  2  3
 # [5, 2, 3, 4]
 
-def shiftClocks():
+def shiftClocks(valueOnSSD):
     global ssdOn
     global clk1On
     global clk2On
@@ -166,7 +166,7 @@ def shiftClocks():
         if (clk1On):
             stopClk(clk_pins[0])
             clk1On = False
-            number_positions[0] = curVal
+            number_positions[0] = valueOnSSD
             startClk(clk_pins[1])
             clk2On = True
             sendToSSD(number_positions[1])
@@ -175,7 +175,7 @@ def shiftClocks():
         elif (clk2On):
             stopClk(clk_pins[1])
             clk2On = False
-            number_positions[1] = curVal
+            number_positions[1] = valueOnSSD
             startClk(clk_pins[2])
             clk3On = True
             sendToSSD(number_positions[2])
@@ -183,7 +183,7 @@ def shiftClocks():
         elif (clk3On):
             stopClk(clk_pins[2])
             clk3On = False
-            number_positions[2] = curVal
+            number_positions[2] = valueOnSSD
             startClk(clk_pins[3])
             clk4On = True
             sendToSSD(number_positions[3])
@@ -191,7 +191,7 @@ def shiftClocks():
         elif (clk4On):
             stopClk(clk_pins[3])
             clk4On = False
-            number_positions[3] = curVal
+            number_positions[3] = valueOnSSD
             startClk(clk_pins[0])
             # This sleep function helps to prevent the first SSD from only
             # taking in some parts of the sendToSSD function.
@@ -344,6 +344,10 @@ minute = '{0:02d}'.format(now.minute)
 automaticClockOn = False
 manualClockOn = False
 
+# Gets the previous minute value to see if it has changed
+
+oldMinute = minute
+
 # To keep track of how much time has passed between each loop
 loopStart = 0.0
 loopEnd = 0.0
@@ -355,19 +359,22 @@ while True:
     if (ssdOn):
 
         if (automaticClockOn):
+            oldMinute = minute
             now = datetime.now()
             hour = '{0:02d}'.format(now.hour)
             minute = '{0:02d}'.format(now.minute)
-            # Begins sending out data for the time.
-            # Sends out hour data
-            clk1On = True
-            for i in range(2):
-                shiftClocks()
-                sendToSSD(hour[0])
-            # Sends out minute data
-            for i in range(2):
-                shiftClocks()
-                sendToSSD(minute[0])
+            # Checks if the minute has updated
+            if (oldMinute != minute):
+                # Begins sending out data for the time.
+                # Sends out hour data
+                clk1On = True
+                for i in range(2):
+                    shiftClocks(hour[i])
+                    sendToSSD(hour[i])
+                # Sends out minute data
+                for i in range(2):
+                    shiftClocks(minute[i])
+                    sendToSSD(minute[i])
 
         # If the A button (Automatic Clock) is pressed
         if (readKeypad(keypad_pins[0], keypadMap[0]) == 'A'):
@@ -383,18 +390,19 @@ while True:
             clk1On = True
             startClk(clk_pins[0])
             for i in range(2):
-                sendToSSD(hour[0])
-                shiftClocks()
+                sendToSSD(hour[i])
+                shiftClocks(hour[i])
                 
             # Sends out minute data
             for i in range(2):
-                sendToSSD(minute[0])
-                shiftClocks()
+                sendToSSD(minute[i])
+                shiftClocks(minute[i])
                 
             automaticClockOn = True
         # If the B button (Automatic Clock is pressed)
         elif (readKeypad(keypad_pins[1], keypadMap[1]) == 'B'):
             print("Manual not ready yet")
+        
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
         sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
@@ -403,7 +411,7 @@ while True:
         # If there was a button press
         if (buttonPressed):
             debounceLimiter()
-            shiftClocks()
+            shiftClocks(curVal)
 
     else:
         # If SSD is off
