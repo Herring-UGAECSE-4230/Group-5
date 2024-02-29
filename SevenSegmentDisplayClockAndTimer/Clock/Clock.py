@@ -404,7 +404,9 @@ while True:
     buttonPressed = False
     # Checks for any input on the keypad.
     if (ssdOn):
-
+        # If given the poweroff signal
+        if ((readKeypad(keypad_pins[3], keypadMap[3])) == '#'):
+            sendToSSD('#')
         if (automaticClockOn):
             oldMinute = minute
             now = datetime.now()
@@ -431,6 +433,8 @@ while True:
                 for i in range(2):
                     shiftClocks(minute[i])
                     sendToSSD(minute[i])
+                    
+            
 
         # If the A button (Automatic Clock) is pressed
         if (readKeypad(keypad_pins[0], keypadMap[0]) == 'A'):
