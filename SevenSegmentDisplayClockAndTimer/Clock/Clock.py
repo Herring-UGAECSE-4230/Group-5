@@ -198,7 +198,7 @@ def shiftClocks(valueOnSSD):
             number_positions[3] = valueOnSSD
             startClk(clk_pins[0])
             # This sleep function helps to prevent the first SSD from only
-            # taking in some parts of the sendToSSD function.
+            #  in some parts of the sendToSSD function.
             sleep(0.07)
             clk1On = True
             sendToSSD(number_positions[0])
@@ -465,6 +465,7 @@ while True:
             numChosen = False
             inputtedValue = None
             curVal = None
+            clk1On = True
             # Waits for input for first SSD
             while (not numChosen):
                 inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
@@ -474,6 +475,7 @@ while True:
                 if (buttonPressed):
                        # Since that this is checking for the left hour, only values of 1 and 2 are acceptable,
                         if (meetsLeftHourStandards(inputtedValue)):
+                            hour[0] = inputtedValue
                             sendToSSD(inputtedValue)
                             shiftClocks(inputtedValue)
                             GPIO.output(led_pin, GPIO.LOW)
@@ -481,6 +483,60 @@ while True:
                         else:
                             GPIO.output(led_pin, GPIO.HIGH)
                 blinkSSD(clk1)
+            # Waits for input for second SSD
+            inputtedValue = None
+            while (not numChosen):
+                inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
+                inputtedValue = readKeypad(keypad_pins[1], keypadMap[1])
+                inputtedValue = readKeypad(keypad_pins[2], keypadMap[2])
+                inputtedValue = readKeypad(keypad_pins[3], keypadMap[3])
+                if (buttonPressed):
+                       # Since that this is checking for the left hour, only values of 1 and 2 are acceptable,
+                        if (meetsRightHourStandards(inputtedValue, hour[0])):
+                            hour[1] = inputtedValue
+                            sendToSSD(inputtedValue)
+                            shiftClocks(inputtedValue)
+                            GPIO.output(led_pin, GPIO.LOW)
+                            numChosen = True
+                        else:
+                            GPIO.output(led_pin, GPIO.HIGH)
+                blinkSSD(clk2)
+            # Waits for input for third SSD
+            inputtedValue = None
+            while (not numChosen):
+                inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
+                inputtedValue = readKeypad(keypad_pins[1], keypadMap[1])
+                inputtedValue = readKeypad(keypad_pins[2], keypadMap[2])
+                inputtedValue = readKeypad(keypad_pins[3], keypadMap[3])
+                if (buttonPressed):
+                       # Since that this is checking for the left hour, only values of 1 and 2 are acceptable,
+                        if (meetsLeftMinuteStandards(inputtedValue)):
+                            minute[0] = inputtedValue
+                            sendToSSD(inputtedValue)
+                            shiftClocks(inputtedValue)
+                            GPIO.output(led_pin, GPIO.LOW)
+                            numChosen = True
+                        else:
+                            GPIO.output(led_pin, GPIO.HIGH)
+                blinkSSD(clk3)
+            # Waits for input for last SSD
+            inputtedValue = None
+            while (not numChosen):
+                inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
+                inputtedValue = readKeypad(keypad_pins[1], keypadMap[1])
+                inputtedValue = readKeypad(keypad_pins[2], keypadMap[2])
+                inputtedValue = readKeypad(keypad_pins[3], keypadMap[3])
+                if (buttonPressed):
+                       # Since any numbers
+                        if (not (inputtedValue == 'A' or inputtedValue == 'C' or inputtedValue == 'D')):
+                            minute[1] = inputtedValue
+                            sendToSSD(inputtedValue)
+                            shiftClocks(inputtedValue)
+                            GPIO.output(led_pin, GPIO.LOW)
+                            numChosen = True
+                        else:
+                            GPIO.output(led_pin, GPIO.HIGH)
+                blinkSSD(clk4)
         
         # If there was a button press
         if (buttonPressed):
