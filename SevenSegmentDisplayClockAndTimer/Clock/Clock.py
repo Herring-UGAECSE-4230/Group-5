@@ -309,12 +309,37 @@ def sendToSSD(currentVal):
             startClk(clk_pins[0])
             clk1On = True
 
+# Blinks the specified SSD to indicate which SSD the user is putting in
 def blinkSSD(clock):
     clock.start(50)
     GPIO.output(ssd_pins, sevenSegment0)
     sleep(0.1)
     GPIO.output(ssd_pins, sevenSegmentOff)
     sleep(0.1)
+
+# Determines if the number parameter meets the left hour standard.
+def meetsLeftHourStandards(num):
+    if (num == '1' or num == '2'):
+        return True
+    else:
+        return False
+    
+# Determines if the number parameter meets the right hour standard.
+def meetsRightHourStandards(num, leftHour):
+    if (leftHour == '1'):
+        # Since that any number 0-9 is good, this will return true.
+        return True
+    elif (leftHour == '2'):
+        if (num == '1' or num == '2' or num == '3' or num == '4'):
+            return True
+    return False
+
+# Determines if the number parameter meets the left minute standard       
+def meetsLeftMinuteStandards(num):
+    if (num == '1' or num == '2' or num == '3' or num == '4' or num == '5'):
+        return True
+    return False
+
 
 
 # Starts the clks
@@ -431,8 +456,26 @@ while True:
             automaticClockOn = True
         # If the B button (Automatic Clock is pressed)
         elif (readKeypad(keypad_pins[1], keypadMap[1]) == 'B'):
+            manualClockOn = True
             automaticClockOn = False
-            blinkSSD(clk1)
+            numChosen = False
+            inputtedValue = None
+            curVal = None
+            # Waits for input
+            while (not numChosen):
+                inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
+                inputtedValue = readKeypad(keypad_pins[1], keypadMap[1])
+                inputtedValue = readKeypad(keypad_pins[2], keypadMap[2])
+                inputtedValue = readKeypad(keypad_pins[3], keypadMap[3])
+                if (buttonPressed):
+                       # Since that this is checking for the left hour, only values of 1 and 2 are acce
+                        if (meetsLeftHourStandards(inputtedValue)):
+                            sendToSSD(inputtedValue)
+                            shiftClocks(inputtedValue)
+                            GPIO.output(led_pin, GPIO.LOW)
+                        else:
+                            GPIO.output(led_pin, GPIO.HIGH)
+                blinkSSD(clk1)
 
             sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
             sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
