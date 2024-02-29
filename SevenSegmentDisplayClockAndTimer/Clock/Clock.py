@@ -457,31 +457,30 @@ while True:
             automaticClockOn = True
         # If the B button (Automatic Clock is pressed)
         elif (readKeypad(keypad_pins[1], keypadMap[1]) == 'B'):
+            # Resets buttonPressed so it can be used again
+            buttonPressed = False
+            GPIO.output(led_pin, GPIO.LOW)
             manualClockOn = True
             automaticClockOn = False
             numChosen = False
             inputtedValue = None
             curVal = None
-            # Waits for input
+            # Waits for input for first SSD
             while (not numChosen):
                 inputtedValue = readKeypad(keypad_pins[0], keypadMap[0])
                 inputtedValue = readKeypad(keypad_pins[1], keypadMap[1])
                 inputtedValue = readKeypad(keypad_pins[2], keypadMap[2])
                 inputtedValue = readKeypad(keypad_pins[3], keypadMap[3])
                 if (buttonPressed):
-                       # Since that this is checking for the left hour, only values of 1 and 2 are acce
+                       # Since that this is checking for the left hour, only values of 1 and 2 are acceptable,
                         if (meetsLeftHourStandards(inputtedValue)):
                             sendToSSD(inputtedValue)
                             shiftClocks(inputtedValue)
                             GPIO.output(led_pin, GPIO.LOW)
+                            numChosen = True
                         else:
                             GPIO.output(led_pin, GPIO.HIGH)
                 blinkSSD(clk1)
-
-            sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
-            sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
-            sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
-            sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
         
         # If there was a button press
         if (buttonPressed):
