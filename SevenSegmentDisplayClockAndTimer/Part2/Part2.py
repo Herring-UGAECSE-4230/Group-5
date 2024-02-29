@@ -8,7 +8,7 @@ GPIO.setmode(GPIO.BCM)
 #           A   B   C  D   E   F   G  DP
 ssd_pins = [27, 17, 18, 23, 24, 22, 5, 25] 
 # Initalize the Keypad Pins
-#             x1  x2  x3  x4  y1 y2  y3  y4
+#              x1  x2  x3  x4  y1 y2  y3  y4
 keypad_pins = [21, 20, 16, 12, 6, 13, 19, 7]
 
 GPIO.setup(ssd_pins, GPIO.OUT, initial = GPIO.LOW)
@@ -35,6 +35,19 @@ clock2pin = 4
 clock3pin = 3
 clock4pin = 2
 
+# Booleans for if each clock is on or not
+
+global clk1On
+global clk2On
+global clk3On
+global clk4On
+
+clk1On = True
+clk2On = True
+clk3On = True
+clk4On = True
+
+# Array holding each clock pin
 clk_pins = [clock1pin, clock2pin, clock3pin, clock4pin]
 
 GPIO.setup(clock1pin, GPIO.OUT, initial = GPIO.LOW)
@@ -51,7 +64,7 @@ clks = [clk1, clk2, clk3, clk4]
 
 # Sets up the LED pin
 led_pin = 11
-GPIO.setup(led_pin, GPIO.OUT, initial = GPIO.OUT)
+GPIO.setup(led_pin, GPIO.OUT, initial = GPIO.LOW)
 
 # Defines each number so that the GPIO can send out the correct signals
 # to each pin to display said number on the SSD.
@@ -62,7 +75,7 @@ sevenSegment2 = (1,1,0,1,1,0,1,0)
 sevenSegment3 = (1,1,1,1,0,0,1,0)
 sevenSegment4 = (0,1,1,0,0,1,1,0)
 sevenSegment5 = (1,0,1,1,0,1,1,0)
-sevenSegment6 = (0,0,1,1,1,1,1,0)
+sevenSegment6 = (1,0,1,1,1,1,1,0)
 sevenSegment7 = (1,1,1,0,0,0,0,0)
 sevenSegment8 = (1,1,1,1,1,1,1,0)
 sevenSegment9 = (1,1,1,0,0,1,1,0)
@@ -129,47 +142,109 @@ def readKeypad(rowNum, rowChar):
 def debounceLimiter():
     sleep(0.25)
 
-# Shifts values down the row of SSDs and places the parameter into the first position
-def shiftValues(newValue):
+# On every button press, shiftClocks will switch over to the next clock.
+# This is to allow the inputted number to be displayed on the SSD correlating to the clock.
+# Example: If the program is currently on the 1st clock, 
+# The old positions are:
+#  0  1  2  3
+# [1, 2, 3, 4]    
+# and the button input is 5,
+# The new positions showing on the ssds should be
+#  0  1  2  3
+# [5, 2, 3, 4]
+
+def shiftClocks():
     global ssdOn
+    global clk1On
+    global clk2On
+    global clk3On
+    global clk4On
     global number_positions
     if (ssdOn):
-        # Moves all current values up by an index of one
-        # and starts every clock that's not currently running
-        for i in range (3):
-            number_positions[3 - i] = number_positions[3 - 1 - i]
-            startClk(clks[i + 1])
-            print(i + 2)
-            print(" Started\n")
-    
-        # Loops through the last three displays to set up the clocks
-        for i in range(3):
-            sendToSSD(number_positions[3 - i])
-            stopClk(clks[3 - i])
-            print(4 - i)
-            print(" Stopped\n")
-        # After the loop is done, the new value will be added to the displays
-        sendToSSD(newValue)
-        number_positions[0] = newValue
-        
+        # If clk n is on, clk n is turned off, and clk n + 1 turns on.
+        if (clk1On):
+            stopClk(clk_pins[0])
+            clk1On = False
+            number_positions[0] = curVal
+            startClk(clk_pins[1])
+            clk2On = True
+            sendToSSD(number_positions[1])
+            
+
+        elif (clk2On):
+            stopClk(clk_pins[1])
+            clk2On = False
+            number_positions[1] = curVal
+            startClk(clk_pins[2])
+            clk3On = True
+            sendToSSD(number_positions[2])
+
+        elif (clk3On):
+            stopClk(clk_pins[2])
+            clk3On = False
+            number_positions[2] = curVal
+            startClk(clk_pins[3])
+            clk4On = True
+            sendToSSD(number_positions[3])
+
+        elif (clk4On):
+            stopClk(clk_pins[3])
+            clk4On = False
+            number_positions[3] = curVal
+            startClk(clk_pins[0])
+            # This sleep function helps to prevent the first SSD from only
+            # taking in some parts of the sendToSSD function.
+            sleep(0.07)
+            clk1On = True
+            sendToSSD(number_positions[0])
+
         for i in range(4):
-            print(f'{i} = {number_positions[i]}')
+            print(f"Index {i} = {number_positions[i]}")
+            
+            
+
 
         
 # Helper function to start a clock at a specific pin
 def startClk(clk):
-    clk.start(50)
+    GPIO.output(clk, 0);
 
 # Helper function to stop a clock at a specific pin
-def stopClk(clk_pin):
-    clk_pin.stop()
+def stopClk(clk):
+    GPIO.output(clk, 1);
 
 # Sends binary data to SSDs
 def sendToSSD(currentVal):
     global ssdOn
     global buttonPressed
-    if (ssdOn and buttonPressed):
+    global clk1On
+    global clk2On
+    global clk3On
+    global clk4On
+    if (ssdOn):
         # Valid Cases; will turn LED pin off
+        if (currentVal == '#' ):
+            # Starts the clocks so that the SSDs can be turned off
+            startClk(clk_pins[0])
+            startClk(clk_pins[1])
+            startClk(clk_pins[2])
+            startClk(clk_pins[3])
+            GPIO.output(ssd_pins, sevenSegmentOff)
+            GPIO.output(led_pin, GPIO.LOW)
+            ssdOn = False
+            # Delays the time so that the SSDs can successfully turn off
+            for i in range(4):
+                number_positions[i] = 0
+            sleep(0.1)
+            stopClk(clk_pins[0])
+            stopClk(clk_pins[1])
+            stopClk(clk_pins[2])
+            stopClk(clk_pins[3])
+            clk1On = False
+            clk2On = False
+            clk3On = False
+            clk4On = False
+            
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
             GPIO.output(led_pin, GPIO.LOW)
@@ -203,21 +278,7 @@ def sendToSSD(currentVal):
         if (currentVal == '*' ):
             GPIO.output(ssd_pins, sevenSegmentDot)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '#' ):
-            # Starts the clocks so that the SSDs can be turned off
-            startClk(clks[1])
-            startClk(clks[2])
-            startClk(clks[3])
-            GPIO.output(ssd_pins, sevenSegmentOff)
-            GPIO.output(led_pin, GPIO.LOW)
-            ssdOn = False
-            # Delays the time so that the SSDs can successfully turn off
-            for i in range(4):
-                number_positions[i] = 0
-            sleep(0.1)
-            stopClk(clks[1])
-            stopClk(clks[2])
-            stopClk(clks[3])
+            
         # Invalid Cases
         if (currentVal == 'A' or currentVal == 'B' or currentVal == 'C' or currentVal == 'D'):
             GPIO.output(led_pin, GPIO.HIGH)
@@ -225,16 +286,21 @@ def sendToSSD(currentVal):
             buttonPressed = False
     else:
         if (currentVal == '#'):
-            startClk(clks[1])
-            startClk(clks[2])
-            startClk(clks[3])
+            startClk(clk_pins[0])
+            startClk(clk_pins[1])
+            startClk(clk_pins[2])
+            startClk(clk_pins[3])
             GPIO.output(ssd_pins, sevenSegment0)
             ssdOn = True
             sleep(0.1)
-            stopClk(clks[1])
-            stopClk(clks[2])
-            stopClk(clks[3])
-            
+            stopClk(clk_pins[0])
+            stopClk(clk_pins[1])
+            stopClk(clk_pins[2])
+            stopClk(clk_pins[3])
+            # Sets up SSD1 to be ready to recieve input
+            stopClk(clk_pins[0])
+            startClk(clk_pins[0])
+            clk1On = True
 
 
 # Starts the clks
@@ -243,6 +309,10 @@ clk1.start(50)
 clk2.start(50)
 clk3.start(50)
 clk4.start(50)
+clk1On = True
+clk2On = True
+clk3On = True
+clk4On = True
 
 
 # Brings up initial state of clock
@@ -251,13 +321,19 @@ sendToSSD('0')
 sleep(0.1)
 
 # Stops the clks
+clk1.stop()
 clk2.stop()
 clk3.stop()
 clk4.stop()
+clk2On = False
+clk3On = False
+clk4On = False
 
+stopClk(clk_pins[0])
+startClk(clk_pins[0])
 while True:
     buttonPressed = False
-    # Sends data out to SSDs
+    # Checks for any input on the keypad.
     if (ssdOn):
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
@@ -267,7 +343,7 @@ while True:
         # If there was a button press
         if (buttonPressed):
             debounceLimiter()
-            shiftValues(curVal)
+            shiftClocks()
 
     else:
         # If SSD is off
