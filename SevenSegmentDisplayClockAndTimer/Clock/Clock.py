@@ -6,17 +6,22 @@ from time import perf_counter
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 # Initalizes the SSDs pins
-#           A   B   C  D   E   F   G  DP
-ssd_pins = [27, 17, 18, 23, 24, 22, 5, 25] 
+#           A   B   C   D   E   F   G  
+ssd_pins = [27, 17, 18, 23, 24, 22, 5] 
 # Initalize the Keypad Pins
 #              x1  x2  x3  x4  y1 y2  y3  y4
 keypad_pins = [21, 20, 16, 12, 6, 13, 19, 7]
+
+# Initalize the Dot pin
+dot_pin = 25
+
 
 GPIO.setup(ssd_pins, GPIO.OUT, initial = GPIO.LOW)
 # Sets up the output pins for the keypad
 GPIO.setup(keypad_pins[0:4], GPIO.OUT, initial = GPIO.LOW)
 # Sets up the input pins from the keypad
 GPIO.setup(keypad_pins[4:8], GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(dot_pin, GPIO.OUT, initial = GPIO.LOW)
 
 # Keeps track of the numbers on the SSDs
 global number_positions
@@ -70,18 +75,17 @@ GPIO.setup(led_pin, GPIO.OUT, initial = GPIO.LOW)
 # Defines each number so that the GPIO can send out the correct signals
 # to each pin to display said number on the SSD.
 
-sevenSegment0 = (1,1,1,1,1,1,0,0)
-sevenSegment1 = (0,1,1,0,0,0,0,0)
-sevenSegment2 = (1,1,0,1,1,0,1,0)
-sevenSegment3 = (1,1,1,1,0,0,1,0)
-sevenSegment4 = (0,1,1,0,0,1,1,0)
-sevenSegment5 = (1,0,1,1,0,1,1,0)
-sevenSegment6 = (1,0,1,1,1,1,1,0)
-sevenSegment7 = (1,1,1,0,0,0,0,0)
-sevenSegment8 = (1,1,1,1,1,1,1,0)
-sevenSegment9 = (1,1,1,0,0,1,1,0)
-sevenSegmentDot = (0,0,0,0,0,0,0,1)
-sevenSegmentOff = (0,0,0,0,0,0,0,0)
+sevenSegment0 = (1,1,1,1,1,1,0)
+sevenSegment1 = (0,1,1,0,0,0,0)
+sevenSegment2 = (1,1,0,1,1,0,1)
+sevenSegment3 = (1,1,1,1,0,0,1)
+sevenSegment4 = (0,1,1,0,0,1,1)
+sevenSegment5 = (1,0,1,1,0,1,1)
+sevenSegment6 = (1,0,1,1,1,1,1)
+sevenSegment7 = (1,1,1,0,0,0,0)
+sevenSegment8 = (1,1,1,1,1,1,1)
+sevenSegment9 = (1,1,1,0,0,1,1)
+sevenSegmentOff = (0,0,0,0,0,0,0)
 
 ssdOn = True
 curVal = '0'
@@ -343,9 +347,10 @@ hour = '{0:02d}'.format(now.hour)
 minute = '{0:02d}'.format(now.minute)
 automaticClockOn = False
 manualClockOn = False
+# For use with dot LED
+isPM = False
 
 # Gets the previous minute value to see if it has changed
-
 oldMinute = minute
 
 # To keep track of how much time has passed between each loop
@@ -366,6 +371,15 @@ while True:
             # Checks if the minute has updated
             if (oldMinute != minute):
                 # Begins sending out data for the time.
+                # Checks if the time is in PM
+                if (now.hour >= 12):
+                    isPM = True
+                    shiftedHour = now.hour - 12
+                    hour = '{0:02d}'.format(shiftedHour)
+                    GPIO.output(dot_pin, GPIO.HIGH)
+                else:
+                    isPM = False
+                    GPIO.output(dot_pin, GPIO.LOW)
                 # Sends out hour data
                 clk1On = True
                 for i in range(2):
@@ -386,6 +400,15 @@ while True:
             minute = '{0:02d}'.format(now.minute)
 
             # Begins sending out data for the time.
+            # Checks if the time is in PM
+            if (now.hour >= 12):
+                isPM = True
+                shiftedHour = now.hour - 12
+                hour = '{0:02d}'.format(shiftedHour)
+                GPIO.output(dot_pin, GPIO.HIGH)
+            else:
+                isPM = False
+                GPIO.output(dot_pin, GPIO.LOW)
             # Sends out hour data
             clk1On = True
             startClk(clk_pins[0])
