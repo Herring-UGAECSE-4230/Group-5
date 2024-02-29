@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 from datetime import datetime
 from time import sleep
+from time import perf_counter
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -207,11 +208,11 @@ def shiftClocks():
         
 # Helper function to start a clock at a specific pin
 def startClk(clk):
-    GPIO.output(clk, 0);
+    GPIO.output(clk, 0)
 
 # Helper function to stop a clock at a specific pin
 def stopClk(clk):
-    GPIO.output(clk, 1);
+    GPIO.output(clk, 1)
 
 # Sends binary data to SSDs
 def sendToSSD(currentVal):
@@ -221,6 +222,11 @@ def sendToSSD(currentVal):
     global clk2On
     global clk3On
     global clk4On
+    global now
+    global hour
+    global minute
+    global automaticClockOn
+    global manualClockOn
     if (ssdOn):
         # Valid Cases; will turn LED pin off
         if (currentVal == '#' ):
@@ -275,12 +281,34 @@ def sendToSSD(currentVal):
         if (currentVal == '9'):
             GPIO.output(ssd_pins, sevenSegment9)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '*' ):
-            GPIO.output(ssd_pins, sevenSegmentDot)
-            GPIO.output(led_pin, GPIO.LOW)
             
-        # Invalid Cases
-        if (currentVal == 'A' or currentVal == 'B' or currentVal == 'C' or currentVal == 'D'):
+        # Automatic Clock
+        if (currentVal == 'A'):
+            manualClockOn = False
+            # Gets the current time the button was pressed.
+            now = datetime.now()
+            hour = '{0:02d}'.format(now.hour)
+            minute = '{0:02d}'.format(now.minute)
+
+            # Begins sending out data for the time.
+            # Sends out hour data
+            clk1On = True
+            for i in range(2):
+                shiftClocks()
+                sendToSSD(hour[0])
+            # Sends out minute data
+            for i in range(2):
+                shiftClocks()
+                sendToSSD(minute[0])
+
+            automaticClockOn = True
+            
+
+
+        # Manual Clock
+        if (currentVal == 'B'):
+            print("Not implemented yet")
+        if (currentVal == 'C' or currentVal == 'D'):
             GPIO.output(led_pin, GPIO.HIGH)
             # Since that it was an invalid button press, buttonPressed = False
             buttonPressed = False
@@ -331,15 +359,48 @@ clk4On = False
 
 stopClk(clk_pins[0])
 startClk(clk_pins[0])
+
+# Sets up the time variable so that when the automatic clock is triggered,
+# it is already initialized
+
+now = datetime.now()
+hour = '{0:02d}'.format(now.hour)
+minute = '{0:02d}'.format(now.minute)
+automaticClockOn = False
+manualClockOn = False
+
+# To keep track of how much time has passed between each loop
+loopStart = 0.0
+loopEnd = 0.0
+
+
 while True:
     buttonPressed = False
     # Checks for any input on the keypad.
     if (ssdOn):
+
+        if (automaticClockOn):
+            now = datetime.now()
+            hour = '{0:02d}'.format(now.hour)
+            minute = '{0:02d}'.format(now.minute)
+            # Begins sending out data for the time.
+            # Sends out hour data
+            clk1On = True
+            for i in range(2):
+                shiftClocks()
+                sendToSSD(hour[0])
+            # Sends out minute data
+            for i in range(2):
+                shiftClocks()
+                sendToSSD(minute[0])
+
+
+        """
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
         sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
         sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
-        
+        """
         # If there was a button press
         if (buttonPressed):
             debounceLimiter()
