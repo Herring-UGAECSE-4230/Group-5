@@ -309,6 +309,13 @@ def sendToSSD(currentVal):
             startClk(clk_pins[0])
             clk1On = True
 
+def blinkSSD(clock):
+    clock.start(50)
+    GPIO.output(ssd_pins, sevenSegment0)
+    sleep(0.1)
+    GPIO.output(ssd_pins, sevenSegmentOff)
+    sleep(0.1)
+
 
 # Starts the clks
 
@@ -424,12 +431,13 @@ while True:
             automaticClockOn = True
         # If the B button (Automatic Clock is pressed)
         elif (readKeypad(keypad_pins[1], keypadMap[1]) == 'B'):
-            print("Manual not ready yet")
-        
-        sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
-        sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
-        sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
-        sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
+            automaticClockOn = False
+            blinkSSD(clk1)
+
+            sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
+            sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
+            sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
+            sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
         
         # If there was a button press
         if (buttonPressed):
