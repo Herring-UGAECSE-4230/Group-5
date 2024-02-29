@@ -254,63 +254,36 @@ def sendToSSD(currentVal):
         if (currentVal == '0'):
             GPIO.output(ssd_pins, sevenSegment0)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '1'):
+        elif (currentVal == '1'):
             GPIO.output(ssd_pins, sevenSegment1)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '2'):
+        elif (currentVal == '2'):
             GPIO.output(ssd_pins, sevenSegment2)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '3'):
+        elif (currentVal == '3'):
             GPIO.output(ssd_pins, sevenSegment3)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '4'):
+        elif (currentVal == '4'):
             GPIO.output(ssd_pins, sevenSegment4)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '5'):
+        elif (currentVal == '5'):
             GPIO.output(ssd_pins, sevenSegment5)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '6'):
+        elif (currentVal == '6'):
             GPIO.output(ssd_pins, sevenSegment6)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '7'):
+        elif (currentVal == '7'):
             GPIO.output(ssd_pins, sevenSegment7)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '8'):
+        elif (currentVal == '8'):
             GPIO.output(ssd_pins, sevenSegment8)
             GPIO.output(led_pin, GPIO.LOW)
-        if (currentVal == '9'):
+        elif (currentVal == '9'):
             GPIO.output(ssd_pins, sevenSegment9)
             GPIO.output(led_pin, GPIO.LOW)
             
-        # Automatic Clock
-        if (currentVal == 'A'):
-            manualClockOn = False
-            # Gets the current time the button was pressed.
-            now = datetime.now()
-            hour = '{0:02d}'.format(now.hour)
-            minute = '{0:02d}'.format(now.minute)
-
-            # Begins sending out data for the time.
-            # Sends out hour data
-            clk1On = True
-            startClk(clk_pins[0])
-            for i in range(2):
-                sendToSSD(hour[0])
-                shiftClocks()
-                
-            # Sends out minute data
-            for i in range(2):
-                shiftClocks()
-                sendToSSD(minute[0])
-
-            automaticClockOn = True
-            
-
-
-        # Manual Clock
-        if (currentVal == 'B'):
-            print("Not implemented yet")
-        if (currentVal == 'C' or currentVal == 'D'):
+        # If the user tries to input a letter key while the system expects a number.
+        elif (currentVal == 'A' or currentVal == 'B' or currentVal == 'C' or currentVal == 'D' or currentVal == '*'):
             GPIO.output(led_pin, GPIO.HIGH)
             # Since that it was an invalid button press, buttonPressed = False
             buttonPressed = False
@@ -396,8 +369,32 @@ while True:
                 shiftClocks()
                 sendToSSD(minute[0])
 
+        # If the A button (Automatic Clock) is pressed
+        if (readKeypad(keypad_pins[0], keypadMap[0]) == 'A'):
 
-        
+            manualClockOn = False
+            # Gets the current time the button was pressed.
+            now = datetime.now()
+            hour = '{0:02d}'.format(now.hour)
+            minute = '{0:02d}'.format(now.minute)
+
+            # Begins sending out data for the time.
+            # Sends out hour data
+            clk1On = True
+            startClk(clk_pins[0])
+            for i in range(2):
+                sendToSSD(hour[0])
+                shiftClocks()
+                
+            # Sends out minute data
+            for i in range(2):
+                sendToSSD(minute[0])
+                shiftClocks()
+                
+            automaticClockOn = True
+        # If the B button (Automatic Clock is pressed)
+        elif (readKeypad(keypad_pins[1], keypadMap[1]) == 'B'):
+            print("Manual not ready yet")
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
         sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
