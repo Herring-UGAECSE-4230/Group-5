@@ -241,6 +241,7 @@ def sendToSSD(currentVal):
             startClk(clk_pins[3])
             GPIO.output(ssd_pins, sevenSegmentOff)
             GPIO.output(led_pin, GPIO.LOW)
+            GPIO.output(dot_pin, GPIO.LOW)
             ssdOn = False
             # Delays the time so that the SSDs can successfully turn off
             for i in range(4):
