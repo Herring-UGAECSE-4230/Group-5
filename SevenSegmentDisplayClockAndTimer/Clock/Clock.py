@@ -342,7 +342,7 @@ def meetsRightHourStandards(num, leftHour):
 
 # Determines if the number parameter meets the left minute standard       
 def meetsLeftMinuteStandards(num):
-    if (num == '1' or num == '2' or num == '3' or num == '4' or num == '5'):
+    if (num == '0' or num == '1' or num == '2' or num == '3' or num == '4' or num == '5'):
         return True
     return False
 

@@ -8,7 +8,7 @@ GPIO.setmode(GPIO.BCM)
 #           A   B   C  D   E   F   G  DP
 ssd_pins = [27, 17, 18, 23, 24, 22, 5, 25] 
 # Initalize the Keypad Pins
-#             x1  x2  x3  x4  y1 y2  y3  y4
+#              x1  x2  x3  x4  y1 y2  y3  y4
 keypad_pins = [21, 20, 16, 12, 6, 13, 19, 7]
 
 GPIO.setup(ssd_pins, GPIO.OUT, initial = GPIO.LOW)
