@@ -293,9 +293,11 @@ def sendToSSD(currentVal):
             # Begins sending out data for the time.
             # Sends out hour data
             clk1On = True
+            startClk(clk_pins[0])
             for i in range(2):
-                shiftClocks()
                 sendToSSD(hour[0])
+                shiftClocks()
+                
             # Sends out minute data
             for i in range(2):
                 shiftClocks()
@@ -395,12 +397,12 @@ while True:
                 sendToSSD(minute[0])
 
 
-        """
+        
         sendToSSD(readKeypad(keypad_pins[0], keypadMap[0])) 
         sendToSSD(readKeypad(keypad_pins[1], keypadMap[1]))
         sendToSSD(readKeypad(keypad_pins[2], keypadMap[2]))
         sendToSSD(readKeypad(keypad_pins[3], keypadMap[3]))
-        """
+        
         # If there was a button press
         if (buttonPressed):
             debounceLimiter()
