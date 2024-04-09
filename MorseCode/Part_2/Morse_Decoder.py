@@ -42,6 +42,13 @@ MC_Letters = {
     'out':'.-.-.', #out
 }
 
+Letters_MC = dict()
+for key in MC_Letters: 
+    val = MC_Letters[key]
+    Letters_MC[val] = key
+
+
+
 #Function to Create the PWM Tone
 def play_tone(pwm, duration):
     if (turnOnSpeakerAndLED):
@@ -60,7 +67,7 @@ def output_mc(morse_code):
             time.sleep(symbol_gap)
         elif symbol == ' ':
             time.sleep(letter_gap)
-        else:
+        else :
             time.sleep(word_gap)
 
 #function to convert letters to morse code
@@ -69,6 +76,8 @@ def letter_to_morse(text):
     for char in text:
         if char in MC_Letters:
             morse_code += MC_Letters[char] + ' '
+        else:
+            morse_code += '?'
     return morse_code.strip()
 
 def file_read(input): #REALLY NEED TO DEFINE PATH
@@ -141,5 +150,100 @@ def timeToMorseChar(time, stateOnCall):
         else:
             return ' '
     return ''
+
+# Sets the average time the user takes to make a dot and a dash
+def determineAverageDotandDash():
+    global dot
+    global dash
+    # Placeholder values
+    averageDot = 0.1
+    averageDash = 0.3
+    # Used to track when the user either does one dot or three
+    numOfDots = 0
+    # Keeps track of when a dash/dot space starts
+    startTime = time.perf_counter()
+    totalTimeOnDots = 0.0
+    totalTimeOnDashes = 0.0
+    # Order of dots and dashes:
+    # Dash
+    # Symbol space (dot)
+    # Dot
+    # Symbol space (dot)
+    # Dash
+    # Symbol space (dot)
+    # Dot
+    # Symbol space (dot)
+    # Dash
+    # No. of Dots = 6
+    # No. of Dashes = 3
+
+    # Dash 1
+    while numOfDots is not 3:
+        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+        if (GPIO.input(telegraphPin)):
+            numOfDots += 1
+    numOfDots = 0
+    endTime = time.perf_counter()
+    totalTimeOnDashes += startTime - endTime
+    # Space 1
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Dot 1
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Space 2
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Dash 2
+    while numOfDots is not 3:
+        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+        if (GPIO.input(telegraphPin)):
+            numOfDots += 1
+    numOfDots = 0
+    endTime = time.perf_counter()
+    totalTimeOnDashes += startTime - endTime
+    # Space 3
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Dot 2
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Space 4
+    startTime = time.perf_counter()
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+    endTime = time.perf_counter()
+    totalTimeOnDots += startTime - endTime
+    # Dash 3
+    while numOfDots is not 3:
+        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+        if (GPIO.input(telegraphPin)):
+            numOfDots += 1
+    numOfDots = 0
+    endTime = time.perf_counter()
+    totalTimeOnDashes += startTime - endTime
+
+    averageDot = totalTimeOnDots / 6
+    averageDash = totalTimeOnDashes / 3
+
+    dot = averageDot
+    dash = averageDash
+
+# Returns the letter
+def morse_to_letter(morse):
+    if (morse in Letters_MC):
+        return Letters_MC[morse]
+    else:
+        return '?'
+
 
 
