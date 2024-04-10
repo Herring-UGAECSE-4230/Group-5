@@ -110,25 +110,24 @@ def morse_encoder(input,output):
 
 #End of stuff from Part 1
 
-# Returns the amount of time the telegraph was either held or not held.
+# Returns the amount of time the telegraph was either held (1) or not held (0).
 def timeOfPressOrRest(stateOnCall):
     startTime = time.perf_counter()
+    # Placeholder
     endTime = time.perf_counter()
     # If stateOnCall was high at the time of the call
     if (stateOnCall == 1):
-        while (stateOnCall == 1):
-            pass
+        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
         endTime = time.perf_counter()
     # If stateOnCall was low at the time of the call
     else:
-        while (stateOnCall == 0):
-            pass
+        GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
         endTime = time.perf_counter()
     timeOfHolding = endTime - startTime
     return timeOfHolding
     
 # Returns a morse code character based on the amount of time the telegraph
-# was press/released
+# was pressed/released
 def timeToMorseChar(time, stateOnCall):
     # Dots and Dashes
     if (stateOnCall == 1):
@@ -148,7 +147,7 @@ def timeToMorseChar(time, stateOnCall):
             return '   '
         # Symbol Space
         else:
-            return ' '
+            return ''
     return ''
 
 # Sets the average time the user takes to make a dot and a dash
@@ -158,10 +157,6 @@ def determineAverageDotandDash():
     # Placeholder values
     averageDot = 0.1
     averageDash = 0.3
-    # Used to track when the user either does one dot or three
-    numOfDots = 0
-    # Keeps track of when a dash/dot space starts
-    startTime = time.perf_counter()
     totalTimeOnDots = 0.0
     totalTimeOnDashes = 0.0
     # Order of dots and dashes:
@@ -176,61 +171,26 @@ def determineAverageDotandDash():
     # Dash
     # No. of Dots = 6
     # No. of Dashes = 3
-
+    # Waits for the user to begin signing "attention"
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
     # Dash 1
-    while numOfDots is not 3:
-        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
-        if (GPIO.input(telegraphPin)):
-            numOfDots += 1
-    numOfDots = 0
-    endTime = time.perf_counter()
-    totalTimeOnDashes += startTime - endTime
+    totalTimeOnDashes += timeOfPressOrRest(1)
     # Space 1
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(0)
     # Dot 1
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(1)
     # Space 2
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(0)
     # Dash 2
-    while numOfDots is not 3:
-        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
-        if (GPIO.input(telegraphPin)):
-            numOfDots += 1
-    numOfDots = 0
-    endTime = time.perf_counter()
-    totalTimeOnDashes += startTime - endTime
+    totalTimeOnDashes += timeOfPressOrRest(1)
     # Space 3
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(0)
     # Dot 2
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(1)
     # Space 4
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
-    endTime = time.perf_counter()
-    totalTimeOnDots += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(0)
     # Dash 3
-    while numOfDots is not 3:
-        GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
-        if (GPIO.input(telegraphPin)):
-            numOfDots += 1
-    numOfDots = 0
-    endTime = time.perf_counter()
-    totalTimeOnDashes += startTime - endTime
+    totalTimeOnDots += timeOfPressOrRest(1)
 
     averageDot = totalTimeOnDots / 6
     averageDash = totalTimeOnDashes / 3
@@ -238,12 +198,59 @@ def determineAverageDotandDash():
     dot = averageDot
     dash = averageDash
 
-# Returns the letter
+# Returns the letter representation of the morse parameter
 def morse_to_letter(morse):
     if (morse in Letters_MC):
         return Letters_MC[morse]
     else:
         return '?'
 
+# Decodes the user input and returns the word
+def decodeUserInput():
+    # Placeholders
+    morseInput = ""
+    morseChar = ""
+    decodedWord = ""
+    decodedLetter = ""
+    # Waits for the user to start inputting morse code
+    GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+    # While morseChar is not a word space
+    while (morseChar != "       "):
+        # While morseChar is not a letter space or a word space
+        while ((morseChar != "   ") and (morseChar != "       ")):
+            timePressed = timeOfPressOrRest(1)
+            morseChar = timeToMorseChar(timePressed, 1)
+            morseInput += morseChar
+            timeRested = timeOfPressOrRest(0)
+            morseChar = timeToMorseChar(timeRested, 0)
+        # Removes the letter/word space from morseInput
+        if (morseChar == "       "):
+            morseInput = morseInput[:-7]
+        elif (morseChar == "   "):
+            morseInput = morseInput[:-3]
+        decodedLetter = morse_to_letter(morseInput)
+        if (decodedLetter == 'over'):
+            file.write("- . - | over\n")
+        elif (decodedLetter == 'out'):
+            file.write(". - . - . | out")
+        else:
+            file.write(morseInput + "   ")
+        decodedWord += decodedLetter
+        # Clears morseChar if it is not a word space
+        if (morseChar != "       "):
+            morseChar = ""
+    return decodedWord
+
+file = open("output.txt", "w")
+
+determineAverageDotandDash()
+print(dot + "\n")
+print(dash + "\n")
+
+while True:
+    decodedWord = decodeUserInput()
+    if decodedWord == "out":
+        file.close()
+    file.write(decodedWord + "\n")
 
 
