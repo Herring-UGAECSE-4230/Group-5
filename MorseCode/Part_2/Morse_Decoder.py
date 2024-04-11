@@ -3,12 +3,12 @@ import time
 import numpy as np
 
 # Placeholders for now
-
-speakerPin = 26
+ledPin = 4
+speakerPin = 6
 telegraphPin = 18
 
-# Default value for dot = 0.1
-dot = 0.1
+# Default value for dot = 1
+dot = 1
 dash = dot * 3
 symbol_gap = dot
 letter_gap = dot * 3
@@ -17,6 +17,7 @@ freq = 500
 global turnOnSpeakerAndLED
 turnOnSpeakerAndLED = True
 GPIO.setmode(GPIO.BCM)
+GPIO.setup(ledPin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(speakerPin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(telegraphPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 pwm = GPIO.PWM(speakerPin, freq)
@@ -48,64 +49,11 @@ for key in MC_Letters:
 
 
 
-#Function to Create the PWM Tone
-def play_tone(pwm, duration):
-    if (turnOnSpeakerAndLED):
-        pwm.start(50)
-        time.sleep(duration)
-        pwm.stop()
-
-#Funtion to Output Morse Code
-def output_mc(morse_code):
-    for symbol in morse_code:
-        if symbol == '.':
-            play_tone(pwm, dot)
-            time.sleep(symbol_gap)
-        elif symbol == '-':
-            play_tone(pwm, dash)
-            time.sleep(symbol_gap)
-        elif symbol == ' ':
-            time.sleep(letter_gap)
-        else :
-            time.sleep(word_gap)
-
-#function to convert letters to morse code
-def letter_to_morse(text):
-    morse_code = ''
-    for char in text:
-        if char in MC_Letters:
-            morse_code += MC_Letters[char] + ' '
-        else:
-            morse_code += '?'
-    return morse_code.strip()
 
 def file_read(input): #REALLY NEED TO DEFINE PATH
     with open("input.txt") as file: #opens file and reads
         lines = [line.rstrip() for line in file.readlines()] #makes a list for read lines 
     return lines
-
-#Morse Code Encoding Funciton
-def morse_encoder(input,output):
-    lines = file_read(input)
-    with open("output.txt", 'w') as file:
-        attention_morse = MC_Letters['attention']
-        output_mc(attention_morse + " ")
-        file.write("- . - . - | attention\n")
-        for line in lines:
-            lineInParts = line.split()
-            for word in lineInParts:
-                morse_line = letter_to_morse(word)
-                output_mc(morse_line)
-                file.write(morse_line + "| " + word + "\n")
-                file.write("       ")
-                # Will trigger a word pause
-                output_mc('@')
-            #file.write(line + "\n")
-            file.write("- . - | over\n")
-            output_mc(MC_Letters['over'] + " ")
-
-        output_mc(MC_Letters['out'])
-        file.write(". - . - . | out\n")
 
 #End of stuff from Part 1
 
@@ -116,13 +64,17 @@ def timeOfPressOrRest(stateOnCall):
     # Placeholder
     endTime = time.perf_counter()
     # If stateOnCall was high at the time of the call
-    if (stateOnCall == 1):
+    if (stateOnCall == 1):#function to convert letters to morse code
+        pwm.start(50)
+        GPIO.output(ledPin, GPIO.HIGH)
         GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+        GPIO.output(ledPin, GPIO.LOW)
+        pwm.stop()
         time.sleep(0.05)
         endTime = time.perf_counter()
     # If stateOnCall was low at the time of the call
     else:
-        GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+        GPIO.wait_for_edge(telegraphPin, GPIO.RISING, timeout= int((dot * 7)*1000))
         time.sleep(0.05)
         endTime = time.perf_counter()
     print(endTime,"\n")
@@ -202,7 +154,7 @@ def morse_to_letter(morse):
         return '?'
 
 # Decodes the user input and returns the word
-def decodeUserInput():
+def decodeUserInput(file):
     # Placeholders
     morseInput = ""
     morseChar = ""
@@ -229,29 +181,36 @@ def decodeUserInput():
         elif (morseChar == "   "):
             morseInput = morseInput[:-3]
         decodedLetter = morse_to_letter(morseInput)
+        # Adds a space for simplicity
+        morseInput += " "
         print("DecodedLetter:", decodedLetter)
         if (decodedLetter == 'over'):
-            file.write("- . - | over\n")
+            file.write("-.- | over\n")
         elif (decodedLetter == 'out'):
-            file.write(". - . - . | out")
+            file.write(".-.-. | out")
         else:
             file.write(morseInput + "   ")
         decodedWord += decodedLetter
         # Clears morseChar if it is not a word space
         if (morseChar != "       "):
             morseChar = ""
+            morseInput = ""
+    print(decodedWord + '\n')
     return decodedWord
 
-file = open("output.txt", "w")
-print("Reached this point!")
-determineAverageDot()
-print(dot,"\n")
+with open("output.txt", "w") as file:
 
+    print("Reached this point!")
+    determineAverageDot()
+    print(dot,"\n")
 
-while True:
-    decodedWord = decodeUserInput()
-    if decodedWord == "out":
-        file.close()
-    file.write(decodedWord + "\n")
+    file.write("-.-.- | attention\n")
+    while True:
+        decodedWord = decodeUserInput(file)
+        if decodedWord == "out":
+            file.close()
+            break
+        else:
+            file.write("| " + decodedWord + "\n")
 
 
