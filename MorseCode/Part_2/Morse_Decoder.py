@@ -65,17 +65,17 @@ def timeOfPressOrRest(stateOnCall):
     endTime = time.perf_counter()
     # If stateOnCall was high at the time of the call
     if (stateOnCall == 1):#function to convert letters to morse code
+        time.sleep(0.02)
         pwm.start(50)
         GPIO.output(ledPin, GPIO.HIGH)
         GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
         GPIO.output(ledPin, GPIO.LOW)
         pwm.stop()
-        time.sleep(0.05)
         endTime = time.perf_counter()
     # If stateOnCall was low at the time of the call
     else:
+        time.sleep(0.02)
         GPIO.wait_for_edge(telegraphPin, GPIO.RISING, timeout= int((dot * 7)*1000))
-        time.sleep(0.05)
         endTime = time.perf_counter()
     print(endTime,"\n")
     timeOfHolding = endTime - startTime
@@ -189,7 +189,7 @@ def decodeUserInput(file):
         elif (decodedLetter == 'out'):
             file.write(".-.-. | out")
         else:
-            file.write(morseInput + "   ")
+            file.write(morseInput)
         decodedWord += decodedLetter
         # Clears morseChar if it is not a word space
         if (morseChar != "       "):
@@ -210,6 +210,8 @@ with open("output.txt", "w") as file:
         if decodedWord == "out":
             file.close()
             break
+        elif decodedWord == "over":
+            file.write("")
         else:
             file.write("| " + decodedWord + "\n")
 
