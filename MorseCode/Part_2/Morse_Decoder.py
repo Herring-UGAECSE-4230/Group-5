@@ -3,9 +3,9 @@ import time
 import numpy as np
 
 # Placeholders for now
-ledPin = 4
-speakerPin = 5
-telegraphPin = 6
+
+speakerPin = 26
+telegraphPin = 18
 
 # Default value for dot = 0.1
 dot = 0.1
@@ -17,10 +17,9 @@ freq = 500
 global turnOnSpeakerAndLED
 turnOnSpeakerAndLED = True
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(ledPin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(speakerPin, GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(telegraphPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-pwm = GPIO.PWM(ledPin, freq)
+pwm = GPIO.PWM(speakerPin, freq)
 
 # Copied from Part 1:
 #morse code dictionary: an array that assigns each letter its morse code representation
@@ -113,16 +112,20 @@ def morse_encoder(input,output):
 # Returns the amount of time the telegraph was either held (1) or not held (0).
 def timeOfPressOrRest(stateOnCall):
     startTime = time.perf_counter()
+    print(startTime,"\n")
     # Placeholder
     endTime = time.perf_counter()
     # If stateOnCall was high at the time of the call
     if (stateOnCall == 1):
         GPIO.wait_for_edge(telegraphPin, GPIO.FALLING)
+        time.sleep(0.05)
         endTime = time.perf_counter()
     # If stateOnCall was low at the time of the call
     else:
         GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
+        time.sleep(0.05)
         endTime = time.perf_counter()
+    print(endTime,"\n")
     timeOfHolding = endTime - startTime
     return timeOfHolding
     
@@ -143,7 +146,7 @@ def timeToMorseChar(time, stateOnCall):
         if (time >= (dot * 7)):
             return '       '
         # letter Space
-        elif (time >= (dot * 2)):
+        elif (time >= (dot * 3)):
             return '   '
         # Symbol Space
         else:
@@ -151,14 +154,11 @@ def timeToMorseChar(time, stateOnCall):
     return ''
 
 # Sets the average time the user takes to make a dot and a dash
-def determineAverageDotandDash():
+def determineAverageDot():
     global dot
-    global dash
     # Placeholder values
     averageDot = 0.1
-    averageDash = 0.3
     totalTimeOnDots = 0.0
-    totalTimeOnDashes = 0.0
     # Order of dots and dashes:
     # Dash
     # Symbol space (dot)
@@ -169,12 +169,10 @@ def determineAverageDotandDash():
     # Dot
     # Symbol space (dot)
     # Dash
-    # No. of Dots = 6
-    # No. of Dashes = 3
     # Waits for the user to begin signing "attention"
     GPIO.wait_for_edge(telegraphPin, GPIO.RISING)
     # Dash 1
-    totalTimeOnDashes += timeOfPressOrRest(1)
+    totalTimeOnDots += (timeOfPressOrRest(1))/3
     # Space 1
     totalTimeOnDots += timeOfPressOrRest(0)
     # Dot 1
@@ -182,7 +180,7 @@ def determineAverageDotandDash():
     # Space 2
     totalTimeOnDots += timeOfPressOrRest(0)
     # Dash 2
-    totalTimeOnDashes += timeOfPressOrRest(1)
+    totalTimeOnDots += (timeOfPressOrRest(1))/3
     # Space 3
     totalTimeOnDots += timeOfPressOrRest(0)
     # Dot 2
@@ -190,13 +188,11 @@ def determineAverageDotandDash():
     # Space 4
     totalTimeOnDots += timeOfPressOrRest(0)
     # Dash 3
-    totalTimeOnDots += timeOfPressOrRest(1)
+    totalTimeOnDots += (timeOfPressOrRest(1))/3
 
-    averageDot = totalTimeOnDots / 6
-    averageDash = totalTimeOnDashes / 3
+    averageDot = totalTimeOnDots / 9
 
     dot = averageDot
-    dash = averageDash
 
 # Returns the letter representation of the morse parameter
 def morse_to_letter(morse):
@@ -220,15 +216,20 @@ def decodeUserInput():
         while ((morseChar != "   ") and (morseChar != "       ")):
             timePressed = timeOfPressOrRest(1)
             morseChar = timeToMorseChar(timePressed, 1)
+            print("MorseChar:",morseChar)
             morseInput += morseChar
+            print("MorseInput:",morseInput)
             timeRested = timeOfPressOrRest(0)
             morseChar = timeToMorseChar(timeRested, 0)
+            print(morseChar)
+            morseInput += morseChar
         # Removes the letter/word space from morseInput
         if (morseChar == "       "):
             morseInput = morseInput[:-7]
         elif (morseChar == "   "):
             morseInput = morseInput[:-3]
         decodedLetter = morse_to_letter(morseInput)
+        print("DecodedLetter:", decodedLetter)
         if (decodedLetter == 'over'):
             file.write("- . - | over\n")
         elif (decodedLetter == 'out'):
@@ -242,10 +243,10 @@ def decodeUserInput():
     return decodedWord
 
 file = open("output.txt", "w")
+print("Reached this point!")
+determineAverageDot()
+print(dot,"\n")
 
-determineAverageDotandDash()
-print(dot + "\n")
-print(dash + "\n")
 
 while True:
     decodedWord = decodeUserInput()
