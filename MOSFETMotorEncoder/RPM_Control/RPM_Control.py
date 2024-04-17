@@ -5,11 +5,11 @@ RPMPERTURN = 25
 
 GPIO.setmode(GPIO.BCM)
 
-IRpin = 4
-encoderClk = 5
-encoderDt = 6
-encoderSw = 7
-pwmPin = 8
+IRpin = 26
+encoderClk = 20
+encoderDt = 16
+encoderSw = 12
+pwmPin = 21
 
 GPIO.setup(IRpin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(encoderClk, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -33,36 +33,53 @@ def debounceTimer():
     time.sleep(0.02)
 
 # Holds value that the encoder is currently on.
-counter = 0
+counter = 1
 
 motorOn = True
 
 def encoderPress(counter):
     global motorOn
-    if (swState == 0):
-            time.sleep(0.3)
-            print("Pressed")
-            # If the motor was previously on
-            if motorOn:
-                motorOn = False
-                pwm.stop()
-            else:
-                motorOn = True
-                pwm.start(50)
-                pwm.ChangeFrequency(counter * RPMPERTURN)
+    time.sleep(0.3)
+    print("Pressed")
+    # If the motor was previously on
+    if motorOn:
+        motorOn = False
+        pwm.stop()
+    else:
+        motorOn = True
+        pwm.start(50)
+        pwm.ChangeFrequency(counter * RPMPERTURN)
+                
 
+                
+# Detects a rising edge from the IR sensor
+# If it detects a rising edge from the IR sensor, the RPM will be calculated and printed to console
+global irCallbackAlreadyRunning
+irCallbackAlreadyRunning = False
 def IRCallback(IRPin):
-    startTime = time.perf_counter()
-    GPIO.wait_for_edge(IRPin, GPIO.FALLING)
-    endTime = time.perf_counter()
-    timeHigh = endTime - startTime
-    periodOfWave = timeHigh * 2
-    # Calculates RPM
-    rpm = (60 / periodOfWave) / 3
-    print(rpm, "\n")
+    global irCallbackAlreadyRunning
+    if not irCallbackAlreadyRunning:
+        irCallbackAlreadyRunning = True
+        startTime = time.perf_counter()
+        while (GPIO.input(IRpin) == 0):
+            time.sleep(0.001)
+        while (GPIO.input(IRpin) == 1):
+            time.sleep(0.001)
+        endTime = time.perf_counter()
+        timeHigh = endTime - startTime
+        periodOfWave = timeHigh * 2
+        # Calculates RPM
+        rpm = ((1 / periodOfWave) * 60) / 3
+        print(rpm, "\n")
+        irCallbackAlreadyRunning = False
 
 print(counter)
+
+# Allows for the program to detect if there is a callback function already running 
+GPIO.add_event_detect(IRpin, GPIO.FALLING, callback=IRCallback)
+
 while True:
+    swState = GPIO.input(encoderSw)
     while motorOn:
         clkState = GPIO.input(encoderClk)
         dtState = GPIO.input(encoderDt)
@@ -81,13 +98,17 @@ while True:
                 counter -= 1
                 print("Counter-clockwise")
             print(counter)
+            # Prevents the counter from becoming zero
+            if counter <= 0:
+                counter = 1
+                
             pwm.ChangeFrequency(counter * RPMPERTURN)
         # Updates lastClkState with clkState so it's ready for next iteration
         lastClkState = clkState
         # If the rotary is pressed
+        if (swState == 0):
+            encoderPress(counter)
+    if (swState == 0):
         encoderPress(counter)
-        # Detects a rising edge from the IR sensor
-        # If it detects a rising edge from the IR sensor, the RPM will be calculated
-        GPIO.add_event_detect(IRpin, GPIO.RISING, callback=IRCallback)
 
     
