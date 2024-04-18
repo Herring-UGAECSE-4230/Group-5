@@ -10,18 +10,21 @@ class EMA:
         if self.ema is None:
             self.ema = value
         else:
-            self.ema = self.alpha * value + (1 - self.alpha) * self.ema
+            if value < 3*self.ema and value > 0.1*self.ema:
+                self.ema = self.alpha * value + (1 - self.alpha) * self.ema
         return self.ema
 
 RPMPERTURN = 25
 
 GPIO.setmode(GPIO.BCM)
 
-IRpin = 26
+IRpin = 19
 encoderClk = 20
 encoderDt = 16
 encoderSw = 12
 pwmPin = 21
+avg_rpm = 5
+expected_rpm = None
 
 GPIO.setup(IRpin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(encoderClk, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -36,7 +39,7 @@ pwm.ChangeFrequency(10)
 #Starts pwm (duty cycle)
 pwm.start(50)
 
-# Holds value of previous encoderClk state
+# Holds valuexpected_rpm += 25e of previous encoderClk state
 lastClkState = GPIO.input(encoderClk)
 
 
@@ -72,7 +75,7 @@ irCallbackAlreadyRunning = False
 rpm_ema_calculator = EMA(0.1)
 
 def IRCallback(IRPin):
-    global irCallbackAlreadyRunning
+    global irCallbackAlreadyRunning, expected_rpm
     if not irCallbackAlreadyRunning:
         irCallbackAlreadyRunning = True
         startTime = time.perf_counter()
@@ -86,7 +89,11 @@ def IRCallback(IRPin):
         # Calculates RPM
         rpm = ((1 / periodOfWave) * 60) / 3
         avg_rpm = rpm_ema_calculator.update(rpm)
-        print(f" Raw RPM: {rpm}, Avg_RPM:{avg_rpm},\n")
+        if expected_rpm is None:
+            expected_rpm = avg_rpm
+        print(f" Avg_RPM: {avg_rpm}, Expected_RPM: {expected_rpm}")
+        #print(avg_rpm,"\n")
+        #print(expected_rpm, "\n")
         irCallbackAlreadyRunning = False
 
 print(counter)
@@ -101,6 +108,7 @@ while True:
         dtState = GPIO.input(encoderDt)
         swState = GPIO.input(encoderSw)
         irState = GPIO.input(IRpin)
+        #print(f"Average RPM: {rpm_ema_calculator.ema}")
         # If the rotary is turned
         if clkState != lastClkState:
             # Delay to help with noise
@@ -108,10 +116,12 @@ while True:
             # If the rotary is turned to the right
             if dtState != clkState:
                 counter += 1
+                expected_rpm += 25
                 print("Clockwise")
             # If the rotary is turned to the left
             else:
                 counter -= 1
+                expected_rpm -= 25
                 print("Counter-clockwise")
             print(counter)
             # Prevents the counter from becoming zero
