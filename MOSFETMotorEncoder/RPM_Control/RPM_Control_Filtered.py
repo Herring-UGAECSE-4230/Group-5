@@ -10,7 +10,9 @@ class EMA:
         if self.ema is None:
             self.ema = value
         else:
-            #if value < 3*self.ema and value > 0.1*self.ema:
+
+            #if value < 3*self.ema and value > 0.1*self.ema
+            if value < 3*self.ema and value > 0.1*self.ema:
                 self.ema = self.alpha * value + (1 - self.alpha) * self.ema
         return self.ema
 
@@ -128,7 +130,9 @@ while True:
             if counter <= 0:
                 counter = 1
                 
+
             pwm.ChangeFrequency((counter * RPMPERTURN) / 60)
+
         # Updates lastClkState with clkState so it's ready for next iteration
         lastClkState = clkState
         # If the rotary is pressed
@@ -137,4 +141,3 @@ while True:
     if (swState == 0):
         encoderPress(counter)
 
-               
