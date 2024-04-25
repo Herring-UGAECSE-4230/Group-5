@@ -10,6 +10,9 @@
 
 .equ GPIOVAL, 0x200000 ;//# 1 << 21
 
+
+.equ OnTime, 25 ;//# 
+.equ OffTime, 25 ;//# 
 _start:
 
 	;//# base of our GPIO structure
@@ -28,8 +31,8 @@ loop:
 	str r1, [r0, #GPFSET0] ;//# store in set register
 
 	# Wait for some time, delay
-	mov r9, #3200      ;//# Adjust the number of repetitions
-	mov r8, #3200   ;//# Adjust the initial value for each chunk delay
+	mov r9, #OnTime      ;//# Adjust the number of repetitions
+	mov r8, #OnTime   ;//# Adjust the initial value for each chunk delay
 
 delay_outer:
 	mov r10, r8    ;//# Preserve the initial value for each chunk delay
@@ -48,8 +51,8 @@ delay_inner:
 	str r1, [r0, #GPFCLR0] ;//# store in set register
 
 	# Wait for some time, delay
-	mov r9, #3200      ;//# Adjust the number of repetitions
-	mov r8, #3200   ;//# Adjust the initial value for each chunk delay
+	mov r9, #OffTime      ;//# Adjust the number of repetitions
+	mov r8, #OffTime   ;//# Adjust the initial value for each chunk delay
 
 delay_outer1:
 	mov r10, r8    ;//# Preserve the initial value for each chunk delay
